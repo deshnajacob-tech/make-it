@@ -89,54 +89,8 @@ nav {
 .btn-cyan { background: var(--cyan); color: #000; font-weight: 700; }
 .btn-cyan:hover { filter: brightness(1.12); }
 .btn-green { background: var(--green); color: #fff; }
-..btn-green:hover { filter: brightness(1.1); }
-.btn-purple { background: linear-gradient(135deg,var(--purple-lg),var(--cyan)); color: #fff; }
-.btn-purple:hover { filter: brightness(1.05); }
+.btn-green:hover { filter: brightness(1.1); }
 .btn-sm { padding: .36rem .9rem; font-size: .83rem; }
-
-.pro-panel {
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(124,58,237,.12), rgba(0,212,255,.08));
-  border: 1px dashed rgba(124,58,237,.45);
-  margin-bottom: 1rem;
-}
-.pro-panel h3 { margin-bottom: .6rem; }
-.pro-panel p { margin-bottom: .9rem; color: var(--text-dim); }
-.pro-panel .upload-status { margin-top: .75rem; }
-
-.pro-only-msg {
-  display: block;
-  margin-top: .35rem;
-  color: var(--text-dim);
-  font-size: .82rem;
-}
-
-.pro-banner {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem 1.2rem;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(0,212,255,.1));
-  border: 1px solid rgba(124,58,237,.3);
-  color: var(--text);
-  width: 100%;
-  max-width: 720px;
-}
-.pro-banner strong { font-size: 1rem; }
-
-.card-pro {
-  background: linear-gradient(135deg, rgba(124,58,237,.08), rgba(0,212,255,.06));
-  border-color: rgba(124,58,237,.4);
-}
-.pro-list {
-  margin: 1rem 0 0;
-  padding-left: 1rem;
-  color: var(--text-dim);
-}
-.pro-list li { margin-bottom: .5rem; }
 
 /* ── Cards ── */
 .card {

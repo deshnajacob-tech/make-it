@@ -3,7 +3,6 @@ const STORAGE = {
   friends: 'gamehub_friends',
   users: 'gamehub_users',
   communityGames: 'gamehub_community_games',
-  proMembers: 'gamehub_pro_members',
 };
 
 const DEFAULT_USERS = ['Alex', 'Mia', 'Casey', 'Noah', 'Zoe'];
@@ -24,31 +23,12 @@ function saveJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function getProMembers() {
-  return readJSON(STORAGE.proMembers, {});
-}
-
-function saveProMembers(data) {
-  saveJSON(STORAGE.proMembers, data);
-}
-
 function getCurrentUser() {
   return readJSON(STORAGE.currentUser, null);
 }
 
-function setCurrentUser(name, pro = false) {
-  saveJSON(STORAGE.currentUser, { name, pro });
-}
-
-function setProStatus(name, enabled) {
-  const members = getProMembers();
-  members[name] = enabled;
-  saveProMembers(members);
-}
-
-function isCurrentUserPro() {
-  const user = getCurrentUser();
-  return Boolean(user?.pro);
+function setCurrentUser(name) {
+  saveJSON(STORAGE.currentUser, { name });
 }
 
 function getAllUsers() {
@@ -75,7 +55,6 @@ function initCommunityApp() {
   if (!localStorage.getItem(STORAGE.users)) saveJSON(STORAGE.users, DEFAULT_USERS);
   if (!localStorage.getItem(STORAGE.communityGames)) saveCommunityGames(DEFAULT_COMMUNITY_GAMES);
   if (!localStorage.getItem(STORAGE.friends)) saveJSON(STORAGE.friends, {});
-  if (!localStorage.getItem(STORAGE.proMembers)) saveProMembers({});
   attachCommunityListeners();
   renderUserState();
   renderFriendArea();
@@ -91,7 +70,6 @@ function attachCommunityListeners() {
   const authButtons = document.querySelectorAll('.requires-auth');
   const openUploadBtn = document.getElementById('openUploadBtn');
   const inviteBtn = document.getElementById('inviteFriendsBtn');
-  const upgradeBtn = document.getElementById('upgradeProBtn');
 
   if (signInBtn) signInBtn.addEventListener('click', openSignInModal);
   if (signOutBtn) signOutBtn.addEventListener('click', () => {
@@ -109,7 +87,6 @@ function attachCommunityListeners() {
     if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   if (inviteBtn) inviteBtn.addEventListener('click', handleInviteFriends);
-  if (upgradeBtn) upgradeBtn.addEventListener('click', handleUpgradePro);
 
   authButtons.forEach(button => {
     button.addEventListener('click', event => {
@@ -152,31 +129,13 @@ function handleSignIn(event) {
   if (!friends[username]) friends[username] = [];
   saveFriends(friends);
 
-  const proMembers = getProMembers();
-  const isPro = Boolean(proMembers[username]);
-  setCurrentUser(username, isPro);
+  setCurrentUser(username);
 
   input.value = '';
   renderUserState();
   renderFriendArea();
   renderCommunityGames();
   closeSignInModal();
-}
-
-function handleUpgradePro(event) {
-  event.preventDefault();
-  const user = getCurrentUser();
-  if (!user) return openSignInModal();
-
-  setProStatus(user.name, true);
-  setCurrentUser(user.name, true);
-
-  const status = document.getElementById('proStatus');
-  if (status) {
-    status.textContent = 'You are now a Make It Pro member. Enjoy premium creator tools.';
-  }
-
-  renderUserState();
 }
 
 function handleUploadGame(event) {
@@ -238,10 +197,9 @@ function renderUserState() {
   const profileName = document.querySelectorAll('.account-name');
 
   if (user) {
-    const suffix = user.pro ? ' (Pro)' : '';
-    if (signInBtn) signInBtn.textContent = `Hi, ${user.name}${suffix}`;
+    if (signInBtn) signInBtn.textContent = `Hi, ${user.name}`;
     if (signOutBtn) signOutBtn.classList.remove('hidden');
-    profileName.forEach(el => { el.textContent = `${user.name}${suffix}`; });
+    profileName.forEach(el => { el.textContent = user.name; });
   } else {
     if (signInBtn) signInBtn.textContent = 'Sign In';
     if (signOutBtn) signOutBtn.classList.add('hidden');

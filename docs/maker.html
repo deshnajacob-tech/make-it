@@ -171,13 +171,6 @@
       <button class="tab-btn"        data-tpl="builder">🧩 Builder</button>
     </div>
 
-    <div class="card card-pro" style="margin-bottom:1rem;">
-      <h3>Make It Pro</h3>
-      <p>Upgrade for RM 10 / month and unlock premium templates, advanced export tools, and extra builder content.</p>
-      <button id="makerProBtn" class="btn btn-purple">Activate Pro</button>
-      <p id="makerProStatus" class="upload-status" style="margin-top:.75rem;"></p>
-    </div>
-
     <!-- Snake Settings -->
     <div class="settings-section active" id="s-snake">
       <div class="settings-title">Colors</div>
@@ -212,17 +205,6 @@
       <div class="field">
         <label>Cell size — <span id="snakeCellLbl">20px (20×20)</span></label>
         <input type="range" id="snakeCell" min="16" max="32" step="4" value="20">
-      </div>
-      <div class="divider"></div>
-      <div class="settings-title">Pro only</div>
-      <div class="field">
-        <label>Trail effect</label>
-        <select id="snakeTrail">
-          <option value="none">None</option>
-          <option value="glow">Glow trail</option>
-          <option value="spark">Sparkles</option>
-        </select>
-        <small class="text-dim">Available for Make It Pro members.</small>
       </div>
     </div>
 
@@ -303,17 +285,6 @@
         <label>Paddle size — <span id="breakPaddleLbl">Normal</span></label>
         <input type="range" id="breakPaddle" min="1" max="3" step="1" value="2">
       </div>
-      <div class="divider"></div>
-      <div class="settings-title">Pro only</div>
-      <div class="field">
-        <label>Bonus mode</label>
-        <select id="breakBonus">
-          <option value="none">None</option>
-          <option value="extra">Extra ball</option>
-          <option value="mega">Mega paddle</option>
-        </select>
-        <small class="text-dim">Extra power-up options for Make It Pro members.</small>
-      </div>
     </div>
 
     <!-- Builder Settings -->
@@ -338,12 +309,6 @@
     <div class="canvas-box">
       <canvas id="makerCanvas" width="400" height="400"></canvas>
     </div>
-    <div class="pro-banner">
-      <div>
-        <strong>Make It Pro</strong> adds extra game modes, premium tile packs, and advanced export options.
-      </div>
-      <span>RM 10 / month</span>
-    </div>
     <div class="action-row">
       <button class="btn btn-cyan" id="playBtn" style="display:none">▶ Play Stage</button>
       <button class="btn btn-green" id="resetBtn">↺ Reset Game</button>
@@ -365,22 +330,11 @@ import { BuilderGame  } from './js/builder.js';
 let currentTpl = 'snake';
 let game       = null;
 let builderTool = 'player';
-let makerProActive = false;
 const canvas   = document.getElementById('makerCanvas');
 const playBtn  = document.getElementById('playBtn');
 const builderStatus = document.getElementById('builderStatus');
 const paletteButtons = document.querySelectorAll('.tile-btn');
 const builderGrid = Array.from({ length: 10 }, () => Array(12).fill('empty'));
-const makerProBtn = document.getElementById('makerProBtn');
-const makerProStatus = document.getElementById('makerProStatus');
-const snakeTrailSelect = document.getElementById('snakeTrail');
-const breakBonusSelect = document.getElementById('breakBonus');
-
-function updateProControls() {
-  if (snakeTrailSelect) snakeTrailSelect.disabled = !makerProActive;
-  if (breakBonusSelect) breakBonusSelect.disabled = !makerProActive;
-  if (makerProStatus) makerProStatus.textContent = makerProActive ? 'Premium options unlocked.' : 'Activate Make It Pro to enable premium features.';
-}
 
 const SCHEMES = {
   neon:  ['#f85149','#f0a83b','#f0e68c','#3fb950','#00d4ff','#a78bfa'],
@@ -547,35 +501,8 @@ function updateLabels() {
   document.getElementById('breakPaddleLbl').textContent= paddleMap[document.getElementById('breakPaddle').value][0];
 }
 
-function updateProControls() {
-  const snakeTrailSelect = document.getElementById('snakeTrail');
-  const breakBonusSelect = document.getElementById('breakBonus');
-  if (snakeTrailSelect) snakeTrailSelect.disabled = !makerProActive;
-  if (breakBonusSelect) breakBonusSelect.disabled = !makerProActive;
-  if (makerProStatus) {
-    makerProStatus.textContent = makerProActive
-      ? 'Premium options unlocked.'
-      : 'Activate Make It Pro to enable premium features.';
-  }
-}
-
 watchAll();
 updateLabels();
-updateProControls();
-
-const makerProBtn = document.getElementById('makerProBtn');
-const makerProStatus = document.getElementById('makerProStatus');
-let makerProActive = false;
-
-if (makerProBtn) {
-  makerProBtn.addEventListener('click', () => {
-    makerProActive = true;
-    updateProControls();
-    makerProBtn.textContent = 'Pro Active';
-    makerProBtn.disabled = true;
-    buildGame();
-  });
-}
 
 // ── Keyboard routing ──────────────────────────────────────────────────────────
 window.addEventListener('keydown', e => {
