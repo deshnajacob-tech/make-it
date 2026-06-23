@@ -187,6 +187,8 @@
     <a href="games.html">Play</a>
     <a href="maker.html">Create</a>
     <a href="learn.html">Learn</a>
+    <button id="signInBtn" class="btn btn-ghost nav-btn">Sign In</button>
+    <button id="signOutBtn" class="btn btn-ghost nav-btn hidden">Sign Out</button>
   </div>
 </nav>
 
@@ -302,6 +304,60 @@
     </div>
   </section>
 
+  <!-- ── Community ── -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Community Hub</h2>
+        <p>Sign in to add friends, share your games, and explore custom mini games from other players.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Players</h3>
+          <p><strong class="friends-count">0</strong> friends connected in your app.</p>
+        </div>
+        <div class="card">
+          <h3>Community Games</h3>
+          <p><strong class="community-games-count">0</strong> mini games uploaded by players.</p>
+        </div>
+        <div class="card">
+          <h3>Start building</h3>
+          <p>Upload your own game to the community and let others play it.</p>
+          <a id="openUploadBtn" class="btn btn-cyan requires-auth">Upload a Game</a>
+        </div>
+      </div>
+      <div id="friendList" class="community-grid"></div>
+      <div id="communityGameList" class="community-grid"></div>
+      <div id="uploadSection" class="community-grid">
+        <div class="card">
+          <h3>Share your game</h3>
+          <form id="uploadForm">
+            <div class="form-group">
+              <label for="uploadTitle">Game title</label>
+              <input id="uploadTitle" class="input" type="text" placeholder="Enter a name" required>
+            </div>
+            <div class="form-group">
+              <label for="uploadDescription">Description</label>
+              <textarea id="uploadDescription" class="textarea" placeholder="Describe your game" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="uploadTemplate">Based on</label>
+              <select id="uploadTemplate">
+                <option value="Snake">Snake</option>
+                <option value="Pong">Pong</option>
+                <option value="Breakout">Breakout</option>
+                <option value="Builder">Builder</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload Game</button>
+            <div id="uploadStatus" class="upload-status"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ── CTA ── -->
   <section class="section">
     <div class="container">
@@ -318,11 +374,28 @@
 
 </main>
 
+<div id="signInModal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Sign in to GameHub</h3>
+      <button id="closeSignInModal" class="modal-close">×</button>
+    </div>
+    <form id="signInForm">
+      <div class="form-group">
+        <label for="signInName">Your name</label>
+        <input id="signInName" class="input" type="text" placeholder="Enter your player name" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Join the app</button>
+    </form>
+  </div>
+</div>
+
 <footer>
   <div class="container">
     GameHub · Built with HTML, CSS &amp; JavaScript · <a href="learn.html" style="color:var(--purple-lg);text-decoration:none">Learn how →</a>
   </div>
 </footer>
-
+<script type="module" src="./js/community.js"></script>
 </body>
 </html>

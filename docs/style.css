@@ -228,3 +228,197 @@ label { font-size: .88rem; color: var(--text-dim); display: block; margin-bottom
 
 .field { margin-bottom: 1rem; }
 .field-row { display: flex; align-items: center; gap: .75rem; }
+
+/* ── Community / Social ── */
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+@media(max-width:900px) { .community-grid { grid-template-columns: 1fr; } }
+
+.community-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.list-grid {
+  display: grid;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: 1rem;
+  color: var(--text-dim);
+  font-size: .9rem;
+}
+
+.small-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .25rem .6rem;
+  border-radius: 999px;
+  background: rgba(124,58,237,.13);
+  color: var(--purple-lg);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 300;
+}
+
+.modal.hidden { display: none; }
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(5px);
+}
+.modal-content {
+  position: relative;
+  width: min(420px, calc(100vw - 2rem));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.5rem;
+  z-index: 1;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+.modal-header h3 { margin: 0; font-size: 1.1rem; }
+.modal-close {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.form-group { margin-bottom: 1rem; }
+.input, .textarea, select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  color: var(--text);
+  padding: .75rem 1rem;
+}
+.textarea { min-height: 100px; resize: vertical; }
+.upload-status { margin-top: .85rem; color: var(--green); font-size: .9rem; }
+
+.nav-links .nav-btn {
+  padding: .45rem .9rem;
+}
+
+  .hidden { display: none !important; }
+
+
+
+/* ── Mobile touch controls ── */
+.touch-controls {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 1.25rem;
+  display: none;
+  gap: .5rem;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+}
+.touch-controls .tc-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.touch-controls .tc-btn.action {
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg,var(--purple-lg),#00d4ff);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+
+@media (max-width: 900px) {
+  .touch-controls { display: flex; }
+  .dot-nav { display: none; }
+  .nav-links .nav-btn { padding: .35rem .6rem; }
+}
+
+/* Joystick */
+.joystick {
+  position: fixed;
+  left: 1rem;
+  bottom: 1.25rem;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 410;
+}
+.joystick .base {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.joystick .stick {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+  transform: translate(0,0);
+  transition: transform 0.01s linear;
+  touch-action: none;
+}
+
+@media (max-width: 900px) {
+  .joystick { display: flex; }
+  .touch-controls { bottom: 5.75rem; }
+}
+
+/* Narrow phones tweaks */
+@media (max-width: 420px) {
+  .joystick { left: .6rem; bottom: 1rem; width: 76px; height: 76px; }
+  .joystick .base { width: 76px; height: 76px; }
+  .joystick .stick { width: 40px; height: 40px; }
+  .touch-controls { bottom: 5rem; gap: .4rem; }
+  .touch-controls .tc-btn { width: 48px; height: 48px; font-size: 1.05rem; }
+  .touch-controls .tc-btn.action { width: 56px; height: 56px; }
+}
+

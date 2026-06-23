@@ -134,6 +134,8 @@
     <a href="games.html">Play</a>
     <a href="maker.html" class="active">Create</a>
     <a href="learn.html">Learn</a>
+    <button id="signInBtn" class="btn btn-ghost nav-btn">Sign In</button>
+    <button id="signOutBtn" class="btn btn-ghost nav-btn hidden">Sign Out</button>
   </div>
 </nav>
 
@@ -687,5 +689,23 @@ start();requestAnimationFrame(loop);
 // ── Init ─────────────────────────────────────────────────────────────────────
 buildGame();
 </script>
+
+<div id="signInModal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Sign in to GameHub</h3>
+      <button id="closeSignInModal" class="modal-close">×</button>
+    </div>
+    <form id="signInForm">
+      <div class="form-group">
+        <label for="signInName">Your name</label>
+        <input id="signInName" class="input" type="text" placeholder="Enter your player name" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Join the app</button>
+    </form>
+  </div>
+</div>
+<script src="./js/community.js"></script>
 </body>
 </html>
