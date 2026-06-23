@@ -116,8 +116,7 @@
   <div class="dot active" data-idx="0" title="Snake"></div>
   <div class="dot"        data-idx="1" title="Pong"></div>
   <div class="dot"        data-idx="2" title="Breakout"></div>
-    <div class="dot"        data-idx="3" title="Dodge"></div>
-
+    <div class="dot"        data-idx="3" title="Dodge"></div>  </div>
     <!-- ── Snake ── -->
     <section class="game-slide" id="slide-0">
       <div class="game-meta">
@@ -289,6 +288,54 @@ pong.onGameOver     = s => updateHS('pong',  s, 'hs-pong');
 breakout.onGameOver = s => updateHS('break', s, 'hs-break');
 dodge.onGameOver    = s => updateHS('dodge', s, 'hs-dodge');
 
+// ── Responsive canvas helper (scale canvases for device width & DPR) ───────
+function makeResponsive(canvas, game) {
+  const baseW = canvas.getAttribute('width') || canvas.width;
+  const baseH = canvas.getAttribute('height') || canvas.height;
+  function apply() {
+    const container = canvas.parentElement || document.body;
+    const maxDisplayW = Math.min(baseW, Math.max(200, Math.floor(container.clientWidth)));
+    const displayW = Math.max( Math.min(maxDisplayW, baseW), Math.floor(container.clientWidth));
+    const ratio = window.devicePixelRatio || 1;
+    const displayH = Math.round(displayW * (baseH / baseW));
+    canvas.style.width = displayW + 'px';
+    canvas.style.height = displayH + 'px';
+    canvas.width = Math.round(displayW * ratio);
+    canvas.height = Math.round(displayH * ratio);
+    if (game && typeof game.resize === 'function') {
+      try { game.resize(canvas.width, canvas.height); } catch(e) { console.warn('resize failed', e); }
+    }
+  }
+  apply();
+  return apply;
+}
+
+const responsiveFns = [];
+[['snakeCanvas', snake], ['pongCanvas', pong], ['breakCanvas', breakout], ['dodgeCanvas', dodge]].forEach(([id, g]) => {
+  const c = document.getElementById(id);
+  if (!c) return;
+  responsiveFns.push(makeResponsive(c, g));
+  c.style.touchAction = 'none';
+});
+
+let _rTO = null;
+function onResize() {
+  responsiveFns.forEach(fn => fn());
+}
+window.addEventListener('resize', () => { clearTimeout(_rTO); _rTO = setTimeout(onResize, 120); });
+
+// ── Show controls only on touch-capable devices ─────────────────────────────
+const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+const tc = document.getElementById('touchControls');
+const jx = document.getElementById('joystick');
+if (!hasTouch) {
+  if (tc) tc.classList.add('hidden');
+  if (jx) jx.classList.add('hidden');
+} else {
+  if (tc) tc.classList.remove('hidden');
+  if (jx) jx.classList.remove('hidden');
+}
+
 // ── Scroll snap / active dot tracking ───────────────────────────────────────
 const wrap   = document.getElementById('arcadeWrap');
 const slides = [...document.querySelectorAll('.game-slide')];
@@ -342,14 +389,12 @@ window.addEventListener('keyup', e => {
 function _touchSendDown(key) {
   const g = games[current];
   if (!g) return;
-  console.debug('touch-down', key, 'activeSlide', current);
   if (g === pong) pong.handleKey(key, true);
   else if (typeof g.handleKey === 'function') g.handleKey(key, true);
 }
 function _touchSendUp(key) {
   const g = games[current];
   if (!g) return;
-  console.debug('touch-up', key, 'activeSlide', current);
   if (g === pong) pong.handleKey(key, false);
   else if (typeof g.handleKey === 'function') g.handleKey(key, false);
 }
@@ -363,14 +408,6 @@ function _touchSendUp(key) {
   el.addEventListener('mousedown',  e => { e.preventDefault(); _touchSendDown(key); });
   el.addEventListener('mouseup',    e => { e.preventDefault(); _touchSendUp(key); });
   el.addEventListener('mouseleave', e => { e.preventDefault(); _touchSendUp(key); });
-});
-
-// add lightweight debug logs for on-screen buttons
-['tc-left','tc-up','tc-right','tc-action'].forEach(id => {
-  const e = document.getElementById(id);
-  if (!e) return;
-  e.addEventListener('touchstart', () => console.debug('btn-touchstart', id, 'slide', current));
-  e.addEventListener('touchend',   () => console.debug('btn-touchend', id, 'slide', current));
 });
 
 // ── Joystick handling (analog left/right) ─────────────────────────────────
@@ -423,7 +460,6 @@ if (joy) {
 
   function start(e) {
     joyActive = true;
-    console.debug('joy-start');
     e.preventDefault();
   }
   function move(e) {
@@ -438,12 +474,10 @@ if (joy) {
     const clampedY = Math.max(-max, Math.min(max, dy));
     setStickPosition(clampedX, clampedY);
     joyProcess(clampedX, clampedY, max);
-    console.debug('joy-move', Math.round(clampedX), Math.round(clampedY));
     e.preventDefault();
   }
   function end(e) {
     joyActive = false;
-    console.debug('joy-end');
     resetStick();
     e && e.preventDefault();
   }

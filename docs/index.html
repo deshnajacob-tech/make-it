@@ -323,8 +323,24 @@
         <div class="card">
           <h3>Start building</h3>
           <p>Upload your own game to the community and let others play it.</p>
-          <a id="openUploadBtn" class="btn btn-cyan requires-auth">Upload a Game</a>
+          <div class="card-actions" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <a id="openUploadBtn" class="btn btn-cyan requires-auth">Upload a Game</a>
+            <button id="inviteFriendsBtn" class="btn btn-ghost">Invite Friends</button>
+          </div>
+          <div id="inviteStatus" class="upload-status" style="margin-top:.85rem;"></div>
         </div>
+      </div>
+      <div class="card card-pro">
+        <h3>Make It Pro</h3>
+        <p>Unlock premium game maker features for only RM 10 / month.</p>
+        <ul class="pro-list">
+          <li>Extra game templates</li>
+          <li>Premium color themes</li>
+          <li>Faster downloads with project history</li>
+          <li>Early access to new community tools</li>
+        </ul>
+        <button id="upgradeProBtn" class="btn btn-purple">Upgrade to Pro</button>
+        <div id="proStatus" class="upload-status" style="margin-top:.85rem;"></div>
       </div>
       <div id="friendList" class="community-grid"></div>
       <div id="communityGameList" class="community-grid"></div>

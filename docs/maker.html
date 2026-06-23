@@ -11,6 +11,7 @@
     grid-template-columns: 300px 1fr;
     min-height: calc(100vh - var(--nav-h));
     padding-top: var(--nav-h);
+    gap: 1rem;
   }
   @media(max-width:800px) {
     .maker-wrap { grid-template-columns: 1fr; }
@@ -22,6 +23,9 @@
     border-right: 1px solid var(--border);
     padding: 1.5rem 1.25rem;
     overflow-y: auto;
+    position: relative;
+    z-index: 5;
+    background: transparent;
   }
 
   .template-tabs {
@@ -74,6 +78,8 @@
     gap: 1.25rem;
     padding: 2rem;
     background: radial-gradient(ellipse 50% 60% at 50% 40%, rgba(124,58,237,.08) 0%, transparent 70%);
+    position: relative;
+    overflow: hidden;
   }
 
   .preview-title {
@@ -88,6 +94,7 @@
     gap: .75rem;
     flex-wrap: wrap;
     justify-content: center;
+    z-index: 3;
   }
 
   .download-hint {
@@ -123,6 +130,17 @@
   .tile-btn span { display: block; font-size: .85rem; }
   .builder-instructions { color: var(--text-dim); margin-top: .85rem; line-height: 1.5; }
   .builder-status { color: var(--text-dim); margin-top: 1rem; text-align: center; }
+
+  /* Canvas constraints to avoid overlap */
+  .canvas-box { width: 100%; display:flex; align-items:center; justify-content:center; }
+  .canvas-box canvas { max-width: 520px; width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+  @media (max-width: 900px) {
+    .maker-wrap { grid-template-columns: 1fr; padding-top: calc(var(--nav-h) + 8px); }
+    .panel-right { padding: 1rem; }
+    .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+    .canvas-box canvas { max-width: 95vw; }
+  }
 </style>
 </head>
 <body>
@@ -151,6 +169,13 @@
       <button class="tab-btn"        data-tpl="pong">🏓 Pong</button>
       <button class="tab-btn"        data-tpl="break">🧱 Breakout</button>
       <button class="tab-btn"        data-tpl="builder">🧩 Builder</button>
+    </div>
+
+    <div class="card card-pro" style="margin-bottom:1rem;">
+      <h3>Make It Pro</h3>
+      <p>Upgrade for RM 10 / month and unlock premium templates, advanced export tools, and extra builder content.</p>
+      <button id="makerProBtn" class="btn btn-purple">Activate Pro</button>
+      <p id="makerProStatus" class="upload-status" style="margin-top:.75rem;"></p>
     </div>
 
     <!-- Snake Settings -->
@@ -187,6 +212,17 @@
       <div class="field">
         <label>Cell size — <span id="snakeCellLbl">20px (20×20)</span></label>
         <input type="range" id="snakeCell" min="16" max="32" step="4" value="20">
+      </div>
+      <div class="divider"></div>
+      <div class="settings-title">Pro only</div>
+      <div class="field">
+        <label>Trail effect</label>
+        <select id="snakeTrail">
+          <option value="none">None</option>
+          <option value="glow">Glow trail</option>
+          <option value="spark">Sparkles</option>
+        </select>
+        <small class="text-dim">Available for Make It Pro members.</small>
       </div>
     </div>
 
@@ -267,6 +303,17 @@
         <label>Paddle size — <span id="breakPaddleLbl">Normal</span></label>
         <input type="range" id="breakPaddle" min="1" max="3" step="1" value="2">
       </div>
+      <div class="divider"></div>
+      <div class="settings-title">Pro only</div>
+      <div class="field">
+        <label>Bonus mode</label>
+        <select id="breakBonus">
+          <option value="none">None</option>
+          <option value="extra">Extra ball</option>
+          <option value="mega">Mega paddle</option>
+        </select>
+        <small class="text-dim">Extra power-up options for Make It Pro members.</small>
+      </div>
     </div>
 
     <!-- Builder Settings -->
@@ -291,6 +338,12 @@
     <div class="canvas-box">
       <canvas id="makerCanvas" width="400" height="400"></canvas>
     </div>
+    <div class="pro-banner">
+      <div>
+        <strong>Make It Pro</strong> adds extra game modes, premium tile packs, and advanced export options.
+      </div>
+      <span>RM 10 / month</span>
+    </div>
     <div class="action-row">
       <button class="btn btn-cyan" id="playBtn" style="display:none">▶ Play Stage</button>
       <button class="btn btn-green" id="resetBtn">↺ Reset Game</button>
@@ -312,11 +365,22 @@ import { BuilderGame  } from './js/builder.js';
 let currentTpl = 'snake';
 let game       = null;
 let builderTool = 'player';
+let makerProActive = false;
 const canvas   = document.getElementById('makerCanvas');
 const playBtn  = document.getElementById('playBtn');
 const builderStatus = document.getElementById('builderStatus');
 const paletteButtons = document.querySelectorAll('.tile-btn');
 const builderGrid = Array.from({ length: 10 }, () => Array(12).fill('empty'));
+const makerProBtn = document.getElementById('makerProBtn');
+const makerProStatus = document.getElementById('makerProStatus');
+const snakeTrailSelect = document.getElementById('snakeTrail');
+const breakBonusSelect = document.getElementById('breakBonus');
+
+function updateProControls() {
+  if (snakeTrailSelect) snakeTrailSelect.disabled = !makerProActive;
+  if (breakBonusSelect) breakBonusSelect.disabled = !makerProActive;
+  if (makerProStatus) makerProStatus.textContent = makerProActive ? 'Premium options unlocked.' : 'Activate Make It Pro to enable premium features.';
+}
 
 const SCHEMES = {
   neon:  ['#f85149','#f0a83b','#f0e68c','#3fb950','#00d4ff','#a78bfa'],
@@ -483,8 +547,35 @@ function updateLabels() {
   document.getElementById('breakPaddleLbl').textContent= paddleMap[document.getElementById('breakPaddle').value][0];
 }
 
+function updateProControls() {
+  const snakeTrailSelect = document.getElementById('snakeTrail');
+  const breakBonusSelect = document.getElementById('breakBonus');
+  if (snakeTrailSelect) snakeTrailSelect.disabled = !makerProActive;
+  if (breakBonusSelect) breakBonusSelect.disabled = !makerProActive;
+  if (makerProStatus) {
+    makerProStatus.textContent = makerProActive
+      ? 'Premium options unlocked.'
+      : 'Activate Make It Pro to enable premium features.';
+  }
+}
+
 watchAll();
 updateLabels();
+updateProControls();
+
+const makerProBtn = document.getElementById('makerProBtn');
+const makerProStatus = document.getElementById('makerProStatus');
+let makerProActive = false;
+
+if (makerProBtn) {
+  makerProBtn.addEventListener('click', () => {
+    makerProActive = true;
+    updateProControls();
+    makerProBtn.textContent = 'Pro Active';
+    makerProBtn.disabled = true;
+    buildGame();
+  });
+}
 
 // ── Keyboard routing ──────────────────────────────────────────────────────────
 window.addEventListener('keydown', e => {
