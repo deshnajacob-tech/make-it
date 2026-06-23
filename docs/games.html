@@ -8,20 +8,22 @@
 <style>
   .arcade-wrap {
     height: calc(100vh - var(--nav-h));
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
   }
 
   .game-slide {
     height: calc(100vh - var(--nav-h));
+    min-height: 500px;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: .75rem;
-    padding: .75rem 1rem 1rem;
+    gap: 1.5rem;
+    padding: 1.5rem;
     position: relative;
   }
 
@@ -35,66 +37,209 @@
 
   .game-meta {
     display: flex;
-    align-items: baseline;
-    gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
     width: 100%;
-    max-width: 680px;
+    text-align: center;
   }
 
-  .game-meta h2 { font-size: 1.35rem; }
+  .game-meta h2 { font-size: 1.6rem; margin: 0; }
 
   .controls-row {
     display: flex;
-    gap: .5rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
   .key {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 5px;
-    padding: .1rem .45rem;
-    font-size: .75rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
     font-family: monospace;
     color: var(--text-dim);
   }
 
-  .high-score { color: var(--yellow); font-size: .85rem; margin-left: auto; }
+  .high-score { 
+    color: var(--yellow); 
+    font-size: 0.9rem; 
+  }
+
+  .canvas-box { 
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .canvas-box canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
 
   .scroll-next {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .25rem;
+    gap: 0.25rem;
     color: var(--text-dim);
-    font-size: .8rem;
+    font-size: 0.85rem;
     cursor: pointer;
     user-select: none;
-    padding: .3rem .8rem;
+    padding: 0.4rem 1rem;
     border-radius: 20px;
-    transition: background .2s;
+    transition: background 0.2s;
   }
   .scroll-next:hover { background: var(--surface2); }
-  .scroll-next .arrow { font-size: 1.1rem; }
+  .scroll-next .arrow { font-size: 1.2rem; }
 
   .dot-nav {
     position: fixed;
-    right: 1.2rem;
+    right: 1.5rem;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: .6rem;
+    gap: 0.8rem;
     z-index: 100;
   }
+
   .dot {
-    width: 8px; height: 8px;
+    width: 10px; 
+    height: 10px;
     border-radius: 50%;
     background: var(--border);
     cursor: pointer;
-    transition: background .2s, transform .2s;
+    transition: background 0.2s, transform 0.2s;
   }
-  .dot.active { background: var(--purple-lg); transform: scale(1.4); }
+  
+  .dot:hover { background: var(--purple); }
+  .dot.active { background: var(--purple-lg); transform: scale(1.5); }
+
+  /* Touch controls */
+  .touch-controls {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    z-index: 90;
+  }
+
+  .touch-controls.hidden { display: none !important; }
+
+  .tc-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .tc-btn:active { background: var(--purple); }
+
+  #tc-up { grid-column: 2; }
+  #tc-action { grid-column: 3; grid-row: 2; }
+
+  /* Joystick */
+  .joystick {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 90;
+  }
+
+  .joystick.hidden { display: none !important; }
+
+  .joystick .base {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid var(--border);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .joystick .stick {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--purple);
+    cursor: grab;
+    transition: transform 0.05s;
+  }
+
+  .joystick .stick:active { cursor: grabbing; }
+
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .dot-nav { right: 1rem; gap: 0.5rem; }
+    .dot { width: 8px; height: 8px; }
+  }
+
+  @media (max-width: 768px) {
+    .dot-nav { display: none; }
+    .game-slide { gap: 1rem; padding: 1rem; min-height: 420px; }
+    .game-meta h2 { font-size: 1.3rem; }
+    .key { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
+    .scroll-next { font-size: 0.75rem; padding: 0.3rem 0.8rem; }
+    .canvas-box { max-width: 100%; }
+    .touch-controls { bottom: 1rem; left: 1rem; }
+    .tc-btn { width: 45px; height: 45px; font-size: 1rem; }
+    .joystick { bottom: 1rem; right: 1rem; }
+    .joystick .base { width: 90px; height: 90px; }
+    .joystick .stick { width: 35px; height: 35px; }
+  }
+
+  @media (max-width: 480px) {
+    .game-slide { gap: 0.75rem; padding: 0.75rem; }
+    .game-meta h2 { font-size: 1.1rem; }
+    .controls-row { gap: 0.3rem; }
+    .key { font-size: 0.65rem; padding: 0.15rem 0.4rem; }
+    .high-score { font-size: 0.8rem; }
+    .scroll-next { font-size: 0.7rem; padding: 0.2rem 0.6rem; }
+    .touch-controls { bottom: 0.8rem; left: 0.8rem; gap: 0.4rem; }
+    .tc-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+    .joystick { bottom: 0.8rem; right: 0.8rem; }
+    .joystick .base { width: 80px; height: 80px; }
+    .joystick .stick { width: 32px; height: 32px; }
+  }
+
+  /* Community section */
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .community-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .community-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
@@ -111,116 +256,108 @@
   </div>
 </nav>
 
-<!-- Side dot navigation -->
+<!-- Dot navigation (desktop) -->
 <div class="dot-nav">
   <div class="dot active" data-idx="0" title="Snake"></div>
-  <div class="dot"        data-idx="1" title="Pong"></div>
-  <div class="dot"        data-idx="2" title="Breakout"></div>
-    <div class="dot"        data-idx="3" title="Dodge"></div>  </div>
-    <!-- ── Snake ── -->
-    <section class="game-slide" id="slide-0">
-      <div class="game-meta">
-        <span class="tag tag-green">Classic</span>
-        <h2>Snake</h2>
-        <div class="controls-row">
-          <span class="key">↑↓←→</span>
-          <span class="key">WASD</span>
-        </div>
-        <span class="high-score" id="hs-snake">Best: 0</span>
-      </div>
+  <div class="dot" data-idx="1" title="Pong"></div>
+  <div class="dot" data-idx="2" title="Breakout"></div>
+  <div class="dot" data-idx="3" title="Dodge"></div>
+</div>
 
-      <div class="canvas-box">
-        <canvas id="snakeCanvas" width="400" height="400"></canvas>
+<main class="arcade-wrap" id="arcadeWrap">
+  <!-- Snake -->
+  <section class="game-slide" id="slide-0">
+    <div class="game-meta">
+      <span class="tag tag-green">Classic</span>
+      <h2>Snake</h2>
+      <div class="controls-row">
+        <span class="key">↑↓←→</span>
+        <span class="key">WASD</span>
       </div>
+      <span class="high-score" id="hs-snake">Best: 0</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="snakeCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="scroll-next" id="next0">
+      <span>Next: Pong</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
 
-      <div class="scroll-hint scroll-next" id="next0">
-        <span>Scroll for Pong</span>
-        <span class="arrow">↓</span>
+  <!-- Pong -->
+  <section class="game-slide" id="slide-1">
+    <div class="game-meta">
+      <span class="tag tag-purple">VS CPU</span>
+      <h2>Pong</h2>
+      <div class="controls-row">
+        <span class="key">W / S</span>
+        <span class="key">↑ / ↓</span>
       </div>
-    </section>
+      <span class="high-score" id="hs-pong">Best: 0</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="pongCanvas" width="620" height="380"></canvas>
+    </div>
+    <div class="scroll-next" id="next1">
+      <span>Next: Breakout</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
 
-    <!-- ── Pong ── -->
-    <section class="game-slide" id="slide-1">
-      <div class="game-meta">
-        <span class="tag tag-purple">VS CPU</span>
-        <h2>Pong</h2>
-        <div class="controls-row">
-          <span class="key">W / S</span>
-          <span class="key">↑ / ↓</span>
-          <span style="font-size:.8rem;color:var(--text-dim)">First to 5 wins</span>
-        </div>
-        <span class="high-score" id="hs-pong">Best: 0</span>
+  <!-- Breakout -->
+  <section class="game-slide" id="slide-2">
+    <div class="game-meta">
+      <span class="tag tag-cyan">Mouse</span>
+      <h2>Breakout</h2>
+      <div class="controls-row">
+        <span class="key">Mouse</span>
+        <span class="key">Space</span>
       </div>
+      <span class="high-score" id="hs-break">Best: 0</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="breakCanvas" width="560" height="420"></canvas>
+    </div>
+    <div class="scroll-next" id="next2">
+      <span>Next: Dodge</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
 
-      <div class="canvas-box">
-        <canvas id="pongCanvas" width="620" height="380"></canvas>
+  <!-- Dodge -->
+  <section class="game-slide" id="slide-3">
+    <div class="game-meta">
+      <span class="tag tag-purple">Avoid</span>
+      <h2>Dodge</h2>
+      <div class="controls-row">
+        <span class="key">← →</span>
+        <span class="key">A / D</span>
       </div>
-
-      <div class="scroll-hint scroll-next" id="next1">
-        <span>Scroll for Breakout</span>
-        <span class="arrow">↓</span>
-      </div>
-    </section>
-
-    <!-- ── Breakout ── -->
-    <section class="game-slide" id="slide-2">
-      <div class="game-meta">
-        <span class="tag tag-cyan">Mouse</span>
-        <h2>Breakout</h2>
-        <div class="controls-row">
-          <span class="key">Mouse</span>
-          <span class="key">Space</span>
-          <span style="font-size:.8rem;color:var(--text-dim)">Clear all bricks!</span>
-        </div>
-        <span class="high-score" id="hs-break">Best: 0</span>
-      </div>
-
-      <div class="canvas-box">
-        <canvas id="breakCanvas" width="560" height="420"></canvas>
-      </div>
-
-      <div class="scroll-hint scroll-next" id="next2">
-        <span>Try Dodge next</span>
-        <span class="arrow">↓</span>
-      </div>
-    </section>
-
-    <!-- ── Dodge ── -->
-    <section class="game-slide" id="slide-3">
-      <div class="game-meta">
-        <span class="tag tag-purple">Avoid</span>
-        <h2>Dodge</h2>
-        <div class="controls-row">
-          <span class="key">← →</span>
-          <span class="key">A / D</span>
-          <span style="font-size:.8rem;color:var(--text-dim)">Dodge obstacles for as long as possible.</span>
-        </div>
-        <span class="high-score" id="hs-dodge">Best: 0</span>
-      </div>
-
-      <div class="canvas-box">
-        <canvas id="dodgeCanvas" width="560" height="420"></canvas>
-      </div>
-
-      <div class="scroll-hint scroll-next" id="next3">
-        <span>Back to Snake</span>
-        <span class="arrow">↑</span>
-      </div>
-    </section>
-
-  </div>
+      <span class="high-score" id="hs-dodge">Best: 0</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="dodgeCanvas" width="560" height="420"></canvas>
+    </div>
+    <div class="scroll-next" id="next3">
+      <span>Back to Snake</span>
+      <span class="arrow">↑</span>
+    </div>
+  </section>
 </main>
 
+<!-- Community Games -->
 <section class="section">
   <div class="container">
     <div class="section-head">
       <h2>Community Games</h2>
-      <p>Browse uploads from other creators and sign in to share your own mini games.</p>
+      <p>Browse uploads from other creators.</p>
     </div>
     <div class="community-grid" id="communityGameList"></div>
   </div>
 </section>
 
+<!-- Sign In Modal -->
 <div id="signInModal" class="modal hidden">
   <div class="modal-backdrop"></div>
   <div class="modal-content">
@@ -233,43 +370,47 @@
         <label for="signInName">Your name</label>
         <input id="signInName" class="input" type="text" placeholder="Enter your player name" required>
       </div>
-      <button type="submit" class="btn btn-primary">Join the app</button>
+      <button type="submit" class="btn btn-primary">Join</button>
     </form>
   </div>
 </div>
 
-  <!-- ── Mobile touch controls overlay (appears on small screens) -->
-  <div class="touch-controls" id="touchControls">
-    <button id="tc-left" class="tc-btn" aria-label="left">◀</button>
-    <button id="tc-up" class="tc-btn" aria-label="up">▲</button>
-    <button id="tc-right" class="tc-btn" aria-label="right">▶</button>
-    <button id="tc-action" class="tc-btn action" aria-label="action">●</button>
+<!-- Touch Controls (Mobile) -->
+<div class="touch-controls hidden" id="touchControls">
+  <button id="tc-left" class="tc-btn">◀</button>
+  <button id="tc-up" class="tc-btn">▲</button>
+  <button id="tc-right" class="tc-btn">▶</button>
+  <button id="tc-down" class="tc-btn">▼</button>
+  <button id="tc-action" class="tc-btn">●</button>
+</div>
+
+<!-- Joystick (Mobile) -->
+<div class="joystick hidden" id="joystick">
+  <div class="base">
+    <div class="stick" id="joyStick"></div>
   </div>
+</div>
 
-  <!-- ── Joystick (left bottom) -->
-  <div class="joystick" id="joystick">
-    <div class="base">
-      <div class="stick" id="joyStick"></div>
-    </div>
-  </div>
+<script type="module">
+import { SnakeGame } from './js/snake.js';
+import { PongGame } from './js/pong.js';
+import { BreakoutGame } from './js/breakout.js';
+import { DodgeGame } from './js/dodge.js';
 
-  <script type="module">
-import { SnakeGame   } from './js/snake.js';
-import { PongGame    } from './js/pong.js';
-import { BreakoutGame} from './js/breakout.js';
-import { DodgeGame   } from './js/dodge.js';
-
-// ── Instantiate games ────────────────────────────────────────────────────────
-const snake    = new SnakeGame(document.getElementById('snakeCanvas'));
-const pong     = new PongGame(document.getElementById('pongCanvas'));
+// Initialize games
+const snake = new SnakeGame(document.getElementById('snakeCanvas'));
+const pong = new PongGame(document.getElementById('pongCanvas'));
 const breakout = new BreakoutGame(document.getElementById('breakCanvas'));
-const dodge    = new DodgeGame(document.getElementById('dodgeCanvas'));
+const dodge = new DodgeGame(document.getElementById('dodgeCanvas'));
+const games = [snake, pong, breakout, dodge];
 
-// ── High scores ──────────────────────────────────────────────────────────────
-const hs = { snake: +localStorage.getItem('hs_snake')||0,
-             pong:  +localStorage.getItem('hs_pong') ||0,
-             break: +localStorage.getItem('hs_break')||0,
-             dodge: +localStorage.getItem('hs_dodge')||0 };
+// High scores
+const hs = {
+  snake: +localStorage.getItem('hs_snake') || 0,
+  pong: +localStorage.getItem('hs_pong') || 0,
+  break: +localStorage.getItem('hs_break') || 0,
+  dodge: +localStorage.getItem('hs_dodge') || 0
+};
 
 function updateHS(key, score, el) {
   if (score > hs[key]) {
@@ -278,73 +419,71 @@ function updateHS(key, score, el) {
   }
   document.getElementById(el).textContent = `Best: ${hs[key]}`;
 }
-updateHS('snake','','hs-snake');
-updateHS('pong', '','hs-pong');
-updateHS('break','','hs-break');
-updateHS('dodge','','hs-dodge');
 
-snake.onGameOver    = s => updateHS('snake', s, 'hs-snake');
-pong.onGameOver     = s => updateHS('pong',  s, 'hs-pong');
+['snake', 'pong', 'break', 'dodge'].forEach(k => updateHS(k, 0, `hs-${k}`));
+
+snake.onGameOver = s => updateHS('snake', s, 'hs-snake');
+pong.onGameOver = s => updateHS('pong', s, 'hs-pong');
 breakout.onGameOver = s => updateHS('break', s, 'hs-break');
-dodge.onGameOver    = s => updateHS('dodge', s, 'hs-dodge');
+dodge.onGameOver = s => updateHS('dodge', s, 'hs-dodge');
 
-// ── Responsive canvas helper (scale canvases for device width & DPR) ───────
+// Responsive canvas scaling
 function makeResponsive(canvas, game) {
-  const baseW = canvas.getAttribute('width') || canvas.width;
-  const baseH = canvas.getAttribute('height') || canvas.height;
+  const baseW = +canvas.getAttribute('width');
+  const baseH = +canvas.getAttribute('height');
+  
   function apply() {
-    const container = canvas.parentElement || document.body;
-    const maxDisplayW = Math.min(baseW, Math.max(200, Math.floor(container.clientWidth)));
-    const displayW = Math.max( Math.min(maxDisplayW, baseW), Math.floor(container.clientWidth));
+    const container = canvas.parentElement;
     const ratio = window.devicePixelRatio || 1;
+    const maxW = Math.min(baseW, container.clientWidth - 20);
+    const displayW = Math.max(200, maxW);
     const displayH = Math.round(displayW * (baseH / baseW));
+    
     canvas.style.width = displayW + 'px';
     canvas.style.height = displayH + 'px';
     canvas.width = Math.round(displayW * ratio);
     canvas.height = Math.round(displayH * ratio);
+    
     if (game && typeof game.resize === 'function') {
-      try { game.resize(canvas.width, canvas.height); } catch(e) { console.warn('resize failed', e); }
+      try { game.resize(canvas.width, canvas.height); } catch (e) { }
     }
   }
+  
   apply();
   return apply;
 }
 
+const canvases = [
+  ['snakeCanvas', snake],
+  ['pongCanvas', pong],
+  ['breakCanvas', breakout],
+  ['dodgeCanvas', dodge]
+];
+
 const responsiveFns = [];
-[['snakeCanvas', snake], ['pongCanvas', pong], ['breakCanvas', breakout], ['dodgeCanvas', dodge]].forEach(([id, g]) => {
-  const c = document.getElementById(id);
-  if (!c) return;
-  responsiveFns.push(makeResponsive(c, g));
-  c.style.touchAction = 'none';
+canvases.forEach(([id, game]) => {
+  const canvas = document.getElementById(id);
+  if (canvas) {
+    responsiveFns.push(makeResponsive(canvas, game));
+    canvas.style.touchAction = 'none';
+  }
 });
 
-let _rTO = null;
-function onResize() {
-  responsiveFns.forEach(fn => fn());
-}
-window.addEventListener('resize', () => { clearTimeout(_rTO); _rTO = setTimeout(onResize, 120); });
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => responsiveFns.forEach(fn => fn()), 100);
+});
 
-// ── Show controls only on touch-capable devices ─────────────────────────────
-const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-const tc = document.getElementById('touchControls');
-const jx = document.getElementById('joystick');
-if (!hasTouch) {
-  if (tc) tc.classList.add('hidden');
-  if (jx) jx.classList.add('hidden');
-} else {
-  if (tc) tc.classList.remove('hidden');
-  if (jx) jx.classList.remove('hidden');
-}
-
-// ── Scroll snap / active dot tracking ───────────────────────────────────────
-const wrap   = document.getElementById('arcadeWrap');
+// Slide navigation
+const wrap = document.getElementById('arcadeWrap');
 const slides = [...document.querySelectorAll('.game-slide')];
-const dots   = [...document.querySelectorAll('.dot')];
-let current  = 0;
+const dots = [...document.querySelectorAll('.dot')];
+let current = 0;
 
 function setSlide(idx) {
   current = Math.max(0, Math.min(slides.length - 1, idx));
-  dots.forEach((d,i) => d.classList.toggle('active', i === current));
+  dots.forEach((d, i) => d.classList.toggle('active', i === current));
 }
 
 const io = new IntersectionObserver(entries => {
@@ -354,150 +493,210 @@ const io = new IntersectionObserver(entries => {
       if (idx !== -1) setSlide(idx);
     }
   });
-}, { root: wrap, threshold: .6 });
+}, { root: wrap, threshold: 0.6 });
 
 slides.forEach(s => io.observe(s));
 
-dots.forEach(d => d.addEventListener('click', () => {
-  slides[+d.dataset.idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
-}));
+dots.forEach(d => {
+  d.addEventListener('click', () => {
+    slides[+d.dataset.idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
 
-// Scroll-next buttons
-document.getElementById('next0').onclick = () => slides[1].scrollIntoView({ behavior:'smooth' });
-document.getElementById('next1').onclick = () => slides[2].scrollIntoView({ behavior:'smooth' });
-document.getElementById('next2').onclick = () => slides[3].scrollIntoView({ behavior:'smooth' });
-document.getElementById('next3').onclick = () => slides[0].scrollIntoView({ behavior:'smooth' });
+// Scroll buttons
+['next0', 'next1', 'next2', 'next3'].forEach((id, i) => {
+  const btn = document.getElementById(id);
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const nextIdx = (i + 1) % slides.length;
+      slides[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+});
 
-// ── Keyboard routing ─────────────────────────────────────────────────────────
-const games = [snake, pong, breakout, dodge];
+// Touch support detection
+const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+const tc = document.getElementById('touchControls');
+const jx = document.getElementById('joystick');
+
+if (hasTouch) {
+  tc.classList.remove('hidden');
+  jx.classList.remove('hidden');
+}
+
+// Keyboard input
 window.addEventListener('keydown', e => {
   const g = games[current];
+  if (!g) return;
+  
   if (g === pong) {
     pong.handleKey(e.key, true);
-  } else {
+  } else if (typeof g.handleKey === 'function') {
     g.handleKey(e.key, true);
   }
-  // Prevent page scroll on arrow/space
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+    e.preventDefault();
+  }
 });
+
 window.addEventListener('keyup', e => {
-  if (current === 1) pong.handleKey(e.key, false);
-  if (current === 3) dodge.handleKey(e.key, false);
+  const g = games[current];
+  if (!g) return;
+  
+  if (g === pong && typeof pong.handleKey === 'function') {
+    pong.handleKey(e.key, false);
+  } else if (typeof g.handleKey === 'function') {
+    g.handleKey(e.key, false);
+  }
 });
 
-// ── Touch / on-screen controls (mobile) ───────────────────────────────────
-function _touchSendDown(key) {
+// Touch button controls
+function sendKeyDown(key) {
   const g = games[current];
   if (!g) return;
-  if (g === pong) pong.handleKey(key, true);
-  else if (typeof g.handleKey === 'function') g.handleKey(key, true);
-}
-function _touchSendUp(key) {
-  const g = games[current];
-  if (!g) return;
-  if (g === pong) pong.handleKey(key, false);
-  else if (typeof g.handleKey === 'function') g.handleKey(key, false);
+  if (typeof g.handleKey === 'function') g.handleKey(key, true);
 }
 
-[['tc-left','ArrowLeft'],['tc-right','ArrowRight'],['tc-up','ArrowUp'],['tc-action',' ']].forEach(([id,key]) => {
+function sendKeyUp(key) {
+  const g = games[current];
+  if (!g) return;
+  if (typeof g.handleKey === 'function') g.handleKey(key, false);
+}
+
+const tcMap = {
+  'tc-left': 'ArrowLeft',
+  'tc-right': 'ArrowRight',
+  'tc-up': 'ArrowUp',
+  'tc-down': 'ArrowDown',
+  'tc-action': ' '
+};
+
+Object.entries(tcMap).forEach(([id, key]) => {
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('touchstart', e => { e.preventDefault(); _touchSendDown(key); });
-  el.addEventListener('touchend',   e => { e.preventDefault(); _touchSendUp(key); });
-  el.addEventListener('touchcancel',e => { e.preventDefault(); _touchSendUp(key); });
-  el.addEventListener('mousedown',  e => { e.preventDefault(); _touchSendDown(key); });
-  el.addEventListener('mouseup',    e => { e.preventDefault(); _touchSendUp(key); });
-  el.addEventListener('mouseleave', e => { e.preventDefault(); _touchSendUp(key); });
+  
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    sendKeyDown(key);
+  });
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    sendKeyUp(key);
+  });
+  el.addEventListener('touchcancel', e => {
+    e.preventDefault();
+    sendKeyUp(key);
+  });
+  
+  el.addEventListener('mousedown', e => {
+    e.preventDefault();
+    sendKeyDown(key);
+  });
+  el.addEventListener('mouseup', e => {
+    e.preventDefault();
+    sendKeyUp(key);
+  });
+  el.addEventListener('mouseleave', e => {
+    e.preventDefault();
+    sendKeyUp(key);
+  });
 });
 
-// ── Joystick handling (analog left/right) ─────────────────────────────────
+// Joystick handling
 const joy = document.getElementById('joyStick');
-const joyWrap = document.getElementById('joystick');
-let joyActive = false;
-let lastDir = 0; // -1 left, 0 none, 1 right
+if (joy) {
+  const base = joy.parentElement;
+  let active = false;
+  let lastDir = 0; // -1=left, 0=none, 1=right
 
-function setStickPosition(x, y) {
-  joy.style.transform = `translate(${x}px, ${y}px)`;
-}
-
-function resetStick() {
-  setStickPosition(0,0);
-  if (lastDir !== 0) {
-    if (lastDir === -1) _touchSendUp('ArrowLeft');
-    if (lastDir === 1)  _touchSendUp('ArrowRight');
-    lastDir = 0;
+  function setPos(x, y) {
+    joy.style.transform = `translate(${x}px, ${y}px)`;
   }
-}
 
-function joyProcess(dx, dy, max) {
-  const nx = Math.max(-1, Math.min(1, dx / max));
-  // threshold to avoid tiny jitter
-  if (nx < -0.35) {
-    if (lastDir !== -1) {
-      if (lastDir === 1) _touchSendUp('ArrowRight');
-      _touchSendDown('ArrowLeft');
+  function process(dx, dy, max) {
+    const nx = Math.max(-1, Math.min(1, dx / max));
+    
+    if (nx < -0.35 && lastDir !== -1) {
+      if (lastDir === 1) sendKeyUp('ArrowRight');
+      sendKeyDown('ArrowLeft');
       lastDir = -1;
-    }
-  } else if (nx > 0.35) {
-    if (lastDir !== 1) {
-      if (lastDir === -1) _touchSendUp('ArrowLeft');
-      _touchSendDown('ArrowRight');
+    } else if (nx > 0.35 && lastDir !== 1) {
+      if (lastDir === -1) sendKeyUp('ArrowLeft');
+      sendKeyDown('ArrowRight');
       lastDir = 1;
-    }
-  } else {
-    if (lastDir !== 0) {
-      if (lastDir === -1) _touchSendUp('ArrowLeft');
-      if (lastDir === 1)  _touchSendUp('ArrowRight');
+    } else if (Math.abs(nx) <= 0.35 && lastDir !== 0) {
+      if (lastDir === -1) sendKeyUp('ArrowLeft');
+      if (lastDir === 1) sendKeyUp('ArrowRight');
       lastDir = 0;
     }
   }
-}
 
-if (joy) {
-  const base = joy.parentElement; // .base
-  const rect = () => base.getBoundingClientRect();
-  const max = 32; // px stick radius for full deflection
+  function reset() {
+    setPos(0, 0);
+    if (lastDir === -1) sendKeyUp('ArrowLeft');
+    if (lastDir === 1) sendKeyUp('ArrowRight');
+    lastDir = 0;
+  }
+
+  const max = 40;
 
   function start(e) {
-    joyActive = true;
+    active = true;
     e.preventDefault();
   }
+
   function move(e) {
-    if (!joyActive) return;
+    if (!active) return;
     const touch = e.touches ? e.touches[0] : e;
-    const r = rect();
-    const cx = r.left + r.width/2;
-    const cy = r.top + r.height/2;
+    const r = base.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
     const dx = touch.clientX - cx;
     const dy = touch.clientY - cy;
-    const clampedX = Math.max(-max, Math.min(max, dx));
-    const clampedY = Math.max(-max, Math.min(max, dy));
-    setStickPosition(clampedX, clampedY);
-    joyProcess(clampedX, clampedY, max);
+    const clamped = [
+      Math.max(-max, Math.min(max, dx)),
+      Math.max(-max, Math.min(max, dy))
+    ];
+    setPos(clamped[0], clamped[1]);
+    process(clamped[0], clamped[1], max);
     e.preventDefault();
   }
+
   function end(e) {
-    joyActive = false;
-    resetStick();
-    e && e.preventDefault();
+    active = false;
+    reset();
+    if (e) e.preventDefault();
   }
 
   joy.addEventListener('touchstart', start);
   joy.addEventListener('touchmove', move);
   joy.addEventListener('touchend', end);
   joy.addEventListener('touchcancel', end);
-  joy.addEventListener('mousedown', e => { start(e); window.addEventListener('mousemove', move); });
-  window.addEventListener('mouseup', e => { window.removeEventListener('mousemove', move); end(e); });
+  
+  joy.addEventListener('mousedown', e => {
+    start(e);
+    window.addEventListener('mousemove', move);
+  });
+  
+  window.addEventListener('mouseup', e => {
+    window.removeEventListener('mousemove', move);
+    end(e);
+  });
 }
 
-// ── Click to restart ─────────────────────────────────────────────────────────
-document.getElementById('snakeCanvas').addEventListener('click',  () => snake.clickOrSpace());
-document.getElementById('pongCanvas').addEventListener('click',   () => pong.clickOrSpace());
-document.getElementById('breakCanvas').addEventListener('click',  () => breakout.clickOrSpace());
+// Click to play
+document.getElementById('snakeCanvas').addEventListener('click', () => snake.clickOrSpace?.());
+document.getElementById('pongCanvas').addEventListener('click', () => pong.clickOrSpace?.());
+document.getElementById('breakCanvas').addEventListener('click', () => breakout.clickOrSpace?.());
+document.getElementById('dodgeCanvas').addEventListener('click', () => dodge.clickOrSpace?.());
 
-// ── Breakout mouse tracking ───────────────────────────────────────────────────
-document.getElementById('breakCanvas').addEventListener('mousemove', e => breakout.handleMouse(e.clientX));
-document.getElementById('dodgeCanvas').addEventListener('click', () => dodge.clickOrSpace());
+// Breakout mouse tracking
+document.getElementById('breakCanvas').addEventListener('mousemove', e => {
+  if (typeof breakout.handleMouse === 'function') {
+    breakout.handleMouse(e.clientX);
+  }
+});
 </script>
 <script src="./js/community.js"></script>
 </body>

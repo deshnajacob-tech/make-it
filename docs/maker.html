@@ -135,11 +135,12 @@
   .canvas-box { width: 100%; display:flex; align-items:center; justify-content:center; }
   .canvas-box canvas { max-width: 520px; width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
 
+  @media (max-width: 1024px) {
+    .maker-wrap { grid-template-columns: 250px 1fr; }
+  }
+
   @media (max-width: 900px) {
-    .maker-wrap { grid-template-columns: 1fr; padding-top: calc(var(--nav-h) + 8px); }
-    .panel-right { padding: 1rem; }
-    .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
-    .canvas-box canvas { max-width: 95vw; }
+    .maker-wrap { grid-template-columns: 1fr; }     .panel-left { border-right: none; border-bottom: 1px solid var(--border); max-height: 50vh; overflow-y: auto; padding: 1rem; }     .panel-right { border-top: 1px solid var(--border); padding: 1rem; }     .canvas-box canvas { max-width: 95vw; }   }    @media (max-width: 600px) {     .panel-left { padding: 0.75rem; max-height: 45vh; }     .template-tabs { gap: 0.3rem; margin-bottom: 1rem; }     .tab-btn { padding: 0.35rem 0.4rem; font-size: 0.75rem; }     .settings-title { font-size: 0.7rem; }     .color-row { gap: 0.5rem; }     .color-label { font-size: 0.8rem; }     .palette { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }     .tile-btn { padding: 0.6rem 0.5rem; font-size: 0.75rem; }     .download-hint { font-size: 0.7rem; }     .preview-title { font-size: 0.9rem; }   }
   }
 </style>
 </head>
@@ -727,3 +728,4 @@ buildGame();
 <script src="./js/community.js"></script>
 </body>
 </html>
+
