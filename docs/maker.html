@@ -96,6 +96,33 @@
     text-align: center;
     max-width: 360px;
   }
+
+  .builder-panel { margin-top: 1rem; }
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem;
+  }
+  .tile-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    padding: .85rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: .88rem;
+    transition: background .15s, border-color .15s, transform .15s;
+  }
+  .tile-btn:hover { border-color: var(--purple-lg); transform: translateY(-1px); }
+  .tile-btn.active { border-color: var(--purple); background: rgba(124,58,237,.12); }
+  .tile-btn span { display: block; font-size: .85rem; }
+  .builder-instructions { color: var(--text-dim); margin-top: .85rem; line-height: 1.5; }
+  .builder-status { color: var(--text-dim); margin-top: 1rem; text-align: center; }
 </style>
 </head>
 <body>
@@ -121,6 +148,7 @@
       <button class="tab-btn active" data-tpl="snake">🐍 Snake</button>
       <button class="tab-btn"        data-tpl="pong">🏓 Pong</button>
       <button class="tab-btn"        data-tpl="break">🧱 Breakout</button>
+      <button class="tab-btn"        data-tpl="builder">🧩 Builder</button>
     </div>
 
     <!-- Snake Settings -->
@@ -238,6 +266,21 @@
         <input type="range" id="breakPaddle" min="1" max="3" step="1" value="2">
       </div>
     </div>
+
+    <!-- Builder Settings -->
+    <div class="settings-section" id="s-builder">
+      <div class="settings-title">Build Your Level</div>
+      <p class="builder-instructions">Drag tiles onto the preview grid to design a custom stage. Place one player and one goal, then press Play.</p>
+      <div class="builder-panel">
+        <div class="palette">
+          <button type="button" class="tile-btn active" data-tile="player">🧑<span>Player</span></button>
+          <button type="button" class="tile-btn" data-tile="goal">🏁<span>Goal</span></button>
+          <button type="button" class="tile-btn" data-tile="coin">🪙<span>Coin</span></button>
+          <button type="button" class="tile-btn" data-tile="wall">⬛<span>Wall</span></button>
+          <button type="button" class="tile-btn" data-tile="empty">✖️<span>Erase</span></button>
+        </div>
+      </div>
+    </div>
   </aside>
 
   <!-- ── Preview Panel ── -->
@@ -247,9 +290,11 @@
       <canvas id="makerCanvas" width="400" height="400"></canvas>
     </div>
     <div class="action-row">
+      <button class="btn btn-cyan" id="playBtn" style="display:none">▶ Play Stage</button>
       <button class="btn btn-green" id="resetBtn">↺ Reset Game</button>
       <button class="btn btn-primary" id="downloadBtn">⬇ Download Game</button>
     </div>
+    <p id="builderStatus" class="builder-status" style="display:none">Drag blocks onto the grid to design a stage, then press Play.</p>
     <p class="download-hint">Download saves your game as a standalone HTML file you can open in any browser or share with friends.</p>
   </div>
 
@@ -259,11 +304,17 @@
 import { SnakeGame    } from './js/snake.js';
 import { PongGame     } from './js/pong.js';
 import { BreakoutGame } from './js/breakout.js';
+import { BuilderGame  } from './js/builder.js';
 
 // ── State ────────────────────────────────────────────────────────────────────
 let currentTpl = 'snake';
 let game       = null;
+let builderTool = 'player';
 const canvas   = document.getElementById('makerCanvas');
+const playBtn  = document.getElementById('playBtn');
+const builderStatus = document.getElementById('builderStatus');
+const paletteButtons = document.querySelectorAll('.tile-btn');
+const builderGrid = Array.from({ length: 10 }, () => Array(12).fill('empty'));
 
 const SCHEMES = {
   neon:  ['#f85149','#f0a83b','#f0e68c','#3fb950','#00d4ff','#a78bfa'],
@@ -281,6 +332,8 @@ const ballSpdMap  = { 1: ['Slow',.65], 2: ['Normal',1], 3: ['Fast',1.5] };
 // ── Build game from current settings ─────────────────────────────────────────
 function buildGame() {
   if (game) game.destroy();
+  playBtn.style.display = currentTpl === 'builder' ? 'inline-flex' : 'none';
+  builderStatus.style.display = currentTpl === 'builder' ? 'block' : 'none';
 
   if (currentTpl === 'snake') {
     canvas.width = 400; canvas.height = 400;
@@ -301,7 +354,7 @@ function buildGame() {
       ballSpeed:     ballSpdMap[document.getElementById('pongSpeed').value][1],
       aiDifficulty:  aiMap[document.getElementById('pongAi').value][1],
     });
-  } else {
+  } else if (currentTpl === 'break') {
     canvas.width = 480; canvas.height = 400;
     const scheme = SCHEMES[document.getElementById('breakScheme').value];
     game = new BreakoutGame(canvas, {
@@ -312,8 +365,87 @@ function buildGame() {
       paddleScale:  paddleMap[document.getElementById('breakPaddle').value][1],
       scheme,
     });
+  } else {
+    canvas.width = 400; canvas.height = 400;
+    game = new BuilderGame(canvas, {
+      cols: 12,
+      rows: 10,
+      cell: 32,
+      grid: builderGrid,
+    });
+    updateBuilderStatus();
   }
 }
+
+function updateBuilderStatus() {
+  if (currentTpl !== 'builder' || !game) return;
+  if (game.running) {
+    builderStatus.textContent = 'Use arrows or WASD to move. Reach the goal to win.';
+  } else if (game.canPlay()) {
+    builderStatus.textContent = 'Ready! Press Play to test your stage.';
+  } else {
+    builderStatus.textContent = 'Place a player and a goal to play.';
+  }
+}
+
+function paintBuilderCell(col, row) {
+  if (currentTpl !== 'builder') return;
+  if (col < 0 || row < 0 || col >= 12 || row >= 10) return;
+  if (builderTool === 'player' || builderTool === 'goal') {
+    for (let y = 0; y < 10; y += 1) {
+      for (let x = 0; x < 12; x += 1) {
+        if (builderGrid[y][x] === builderTool) builderGrid[y][x] = 'empty';
+      }
+    }
+  }
+  builderGrid[row][col] = builderTool;
+  if (game && currentTpl === 'builder') game.updateStage(builderGrid);
+  updateBuilderStatus();
+}
+
+function builderCellFromPointer(event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const cols = 12;
+  const rows = 10;
+  const cell = 32;
+  const startX = Math.floor((rect.width - cols * cell) / 2);
+  const startY = Math.floor((rect.height - rows * cell) / 2);
+  return {
+    col: Math.floor((x - startX) / cell),
+    row: Math.floor((y - startY) / cell),
+  };
+}
+
+let isPainting = false;
+canvas.addEventListener('pointerdown', event => {
+  if (currentTpl !== 'builder') return;
+  isPainting = true;
+  const { col, row } = builderCellFromPointer(event);
+  paintBuilderCell(col, row);
+});
+canvas.addEventListener('pointermove', event => {
+  if (currentTpl !== 'builder' || !isPainting) return;
+  const { col, row } = builderCellFromPointer(event);
+  paintBuilderCell(col, row);
+});
+window.addEventListener('pointerup', () => { isPainting = false; });
+window.addEventListener('pointercancel', () => { isPainting = false; });
+
+paletteButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    paletteButtons.forEach(b => b.classList.remove('active'));
+    button.classList.add('active');
+    builderTool = button.dataset.tile;
+  });
+});
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (currentTpl !== 'builder' || !game) return;
+  game.start();
+  updateBuilderStatus();
+});
 
 // ── Template tabs ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -362,8 +494,8 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => {
   if (currentTpl === 'pong' && game) game.handleKey(e.key, false);
 });
-canvas.addEventListener('click',     () => game && game.clickOrSpace());
-canvas.addEventListener('mousemove', e  => currentTpl === 'break' && game && game.handleMouse(e.clientX));
+canvas.addEventListener('click',     () => game && typeof game.clickOrSpace === 'function' && game.clickOrSpace());
+canvas.addEventListener('mousemove', e  => currentTpl === 'break' && game && typeof game.handleMouse === 'function' && game.handleMouse(e.clientX));
 
 document.getElementById('resetBtn').addEventListener('click', () => buildGame());
 
@@ -397,6 +529,9 @@ function generateHTML() {
     const aiSpd = aiMap[document.getElementById('pongAi').value][1];
     return pongHTML({ p1, p2, ball, bspd, aiSpd });
   }
+  if (currentTpl === 'builder') {
+    return builderHTML({ grid: builderGrid, cell: 32 });
+  }
   // Breakout
   const pc     = document.getElementById('breakPaddleColor').value;
   const bc     = document.getElementById('breakBallColor').value;
@@ -408,6 +543,27 @@ function generateHTML() {
 }
 
 // ── HTML templates for download ───────────────────────────────────────────────
+function builderHTML({ grid, cell }) {
+  const stage = JSON.stringify(grid);
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Builder Game</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#e6edf3;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}h1{font-size:1.2rem}canvas{border-radius:8px;border:2px solid #30363d}</style>
+</head><body><h1>🧩 Custom Stage</h1><canvas id="g" width="400" height="400"></canvas><p>Use arrow keys or WASD to move to the goal.</p>
+<script>
+const canvas=document.getElementById('g'),ctx=canvas.getContext('2d');
+const GRID=${stage};const ROWS=GRID.length,COLS=GRID[0].length,CELL=${cell};
+let player,goal,coins=[];let score=0,victory=false;
+const types={empty:'#0b0f18',player:'#7c3aed',goal:'#22c55e',coin:'#facc15',wall:'#6b7280'};
+function parseStage(){coins=[];player=null;goal=null;for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){const t=GRID[y][x];if(t==='player')player={x,y};if(t==='goal')goal={x,y};if(t==='coin')coins.push({x,y});}}}
+function draw(){ctx.fillStyle='#0b0f18';ctx.fillRect(0,0,canvas.width,canvas.height);const startX=Math.floor((canvas.width-COLS*CELL)/2);const startY=Math.floor((canvas.height-ROWS*CELL)/2);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;for(let y=0;y<=ROWS;y++){ctx.beginPath();ctx.moveTo(startX,startY+y*CELL);ctx.lineTo(startX+COLS*CELL,startY+y*CELL);ctx.stroke();}for(let x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(startX+x*CELL,startY);ctx.lineTo(startX+x*CELL,startY+ROWS*CELL);ctx.stroke();}
+for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){const t=GRID[y][x];if(t==='empty')continue;ctx.fillStyle=types[t];const px=startX+x*CELL+2,py=startY+y*CELL+2,size=CELL-4;if(t==='wall'){ctx.fillRect(px,py,size,size);}else{ctx.beginPath();ctx.arc(px+size/2,py+size/2,size/2,0,Math.PI*2);ctx.fill();}}}
+if(player){ctx.fillStyle=types.player;const px=startX+player.x*CELL+2,py=startY+player.y*CELL+2;ctx.beginPath();ctx.arc(px+(CELL-4)/2,py+(CELL-4)/2,(CELL-4)/2,0,Math.PI*2);ctx.fill();}
+ctx.fillStyle='#fff';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(victory?'Goal reached!':'Score: '+score,canvas.width/2,canvas.height-14);}
+function move(dx,dy){if(!player||victory)return;const nx=player.x+dx,ny=player.y+dy;if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return;const tile=GRID[ny][nx];if(tile==='wall')return;player={x:nx,y:ny};if(tile==='coin'){GRID[ny][nx]='empty';score++;}if(tile==='goal'){victory=true;}draw();}
+window.addEventListener('keydown',e=>{const map={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};const dir=map[e.key];if(dir){move(dir[0],dir[1]);e.preventDefault();}});
+parseStage();draw();
+</script></body></html>`;
+}
+
 function snakeHTML({ sc, fc, bg, spd, cell, grid }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Snake Game</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}h1{color:#e6edf3;font-family:sans-serif;font-size:1.2rem}canvas{border-radius:8px;border:2px solid #30363d}</style>
