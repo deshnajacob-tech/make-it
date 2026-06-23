@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn · GameHub</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .learn-wrap {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - var(--nav-h));
+    padding-top: var(--nav-h);
+  }
+  @media(max-width:760px) {
+    .learn-wrap { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 1.8rem 1.2rem;
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100vh - var(--nav-h));
+    overflow-y: auto;
+  }
+  .sidebar h3 { font-size: .8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: .7rem; }
+  .step-link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .5rem .7rem;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: var(--text-dim);
+    transition: background .15s, color .15s;
+    margin-bottom: .2rem;
+  }
+  .step-link:hover { background: var(--surface2); color: var(--text); }
+  .step-link.active { background: rgba(124,58,237,.15); color: var(--purple-lg); }
+  .step-num-sm {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-link.active .step-num-sm { background: var(--purple); color: #fff; }
+  .step-link.done .step-num-sm   { background: var(--green);  color: #fff; }
+
+  .prog-section { margin-bottom: 1.5rem; }
+  .prog-label { font-size: .8rem; color: var(--text-dim); margin-bottom: .4rem; }
+  .prog-frac  { font-size: .8rem; color: var(--purple-lg); float: right; }
+
+  /* ── Main content ── */
+  .tutorial-main {
+    padding: 2rem 2.5rem;
+    max-width: 780px;
+  }
+
+  .tut-header { margin-bottom: 2rem; }
+  .tut-header .tag { margin-bottom: .6rem; }
+  .tut-header h1 { font-size: 1.9rem; margin-bottom: .4rem; }
+  .tut-header p   { max-width: 560px; }
+
+  /* Step display */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  .step-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .step-badge {
+    width: 42px; height: 42px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--purple);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-banner h2 { font-size: 1.25rem; margin-bottom: .1rem; }
+  .step-banner p  { font-size: .85rem; }
+
+  .lesson-body h3 { margin: 1.5rem 0 .5rem; color: var(--cyan); font-size: 1rem; }
+  .lesson-body p  { margin-bottom: .9rem; font-size: .95rem; }
+  .lesson-body ul { margin: .5rem 0 1rem 1.25rem; color: var(--text-dim); font-size: .92rem; }
+  .lesson-body ul li { margin-bottom: .3rem; }
+  .lesson-body strong { color: var(--text); }
+
+  .concept-box {
+    background: rgba(0,212,255,.06);
+    border-left: 3px solid var(--cyan);
+    border-radius: 0 8px 8px 0;
+    padding: .85rem 1rem;
+    margin: 1rem 0;
+    font-size: .9rem;
+  }
+  .concept-box strong { color: var(--cyan); }
+
+  /* Navigation buttons */
+  .step-nav {
+    display: flex;
+    gap: .75rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .step-nav .spacer { flex: 1; }
+
+  /* Try it canvas */
+  .tryit {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin: 1.25rem 0;
+  }
+  .tryit-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    font-size: .85rem;
+    color: var(--cyan);
+    font-weight: 600;
+  }
+  .tryit canvas { border-radius: 6px; display: block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 GameHub</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="games.html">Play</a>
+    <a href="maker.html">Create</a>
+    <a href="learn.html" class="active">Learn</a>
+  </div>
+</nav>
+
+<div class="learn-wrap">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="prog-section">
+      <div class="prog-label">Progress <span class="prog-frac" id="progFrac">0 / 9</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+    <h3>How to Make Snake</h3>
+    <div id="stepLinks"></div>
+  </aside>
+
+  <!-- ── Tutorial content ── -->
+  <div class="tutorial-main">
+    <div class="tut-header">
+      <span class="tag tag-green">Beginner</span>
+      <h1>How to Make Snake</h1>
+      <p>Learn game development step by step — from a blank canvas to a fully working Snake game in JavaScript.</p>
+    </div>
+
+    <div id="stepPanels"></div>
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    title: 'What is a Game Loop?',
+    emoji: '🔄',
+    body: `
+      <p>Every game runs on a <strong>game loop</strong> — a piece of code that repeats over and over, very fast. Each repetition is called a <em>frame</em>.</p>
+      <p>Each frame does three things:</p>
+      <ul>
+        <li><strong>Update</strong> — move things, check collisions, update the score</li>
+        <li><strong>Draw</strong> — paint everything to the screen</li>
+        <li><strong>Wait</strong> — sleep until the next frame</li>
+      </ul>
+      <div class="concept-box"><strong>Key idea:</strong> A game is just a loop that draws slightly different pictures very quickly — like a flipbook animation.</div>
+      <h3>In code</h3>
+      <p>For Snake we'll use <code>setInterval</code> to call our update+draw function every 150ms (roughly 7 frames per second — fast enough for a grid game).</p>
+<pre><code><span class="kw">function</span> <span class="fn">gameLoop</span>() {
+  update(); <span class="cm">// move the snake, check collisions</span>
+  draw();   <span class="cm">// paint the frame</span>
+}
+<span class="fn">setInterval</span>(gameLoop, <span class="num">150</span>); <span class="cm">// run every 150ms</span>
+</code></pre>
+    `
+  },
+  {
+    title: 'Setting up the Canvas',
+    emoji: '🖼️',
+    body: `
+      <p>HTML has a <strong>&lt;canvas&gt;</strong> element — a blank drawing surface we control entirely from JavaScript. Think of it as a whiteboard.</p>
+<pre><code><span class="cm">&lt;!-- HTML --&gt;</span>
+&lt;<span class="kw">canvas</span> <span class="fn">id</span>=<span class="str">"game"</span> <span class="fn">width</span>=<span class="str">"400"</span> <span class="fn">height</span>=<span class="str">"400"</span>&gt;&lt;/<span class="kw">canvas</span>&gt;
+</code></pre>
+<pre><code><span class="cm">// JavaScript</span>
+<span class="kw">const</span> canvas = document.<span class="fn">getElementById</span>(<span class="str">'game'</span>);
+<span class="kw">const</span> ctx    = canvas.<span class="fn">getContext</span>(<span class="str">'2d'</span>); <span class="cm">// 2D drawing API</span>
+
+<span class="cm">// Fill the canvas black</span>
+ctx.fillStyle = <span class="str">'black'</span>;
+ctx.<span class="fn">fillRect</span>(<span class="num">0</span>, <span class="num">0</span>, canvas.width, canvas.height);
+</code></pre>
+      <div class="concept-box"><strong>ctx.fillRect(x, y, width, height)</strong> draws a solid rectangle. Almost everything in Snake is just rectangles!</div>
+      <div class="tryit">
+        <div class="tryit-header">▶ Live preview — canvas with a black background</div>
+        <canvas id="cv2" width="200" height="80" style="background:#000;border-radius:6px"></canvas>
+      </div>
+    `,
+    tryit: (canvas) => {
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,200,80);
+      ctx.fillStyle = '#7c3aed'; ctx.fillRect(10,10,40,20);
+      ctx.fillStyle = '#00d4ff'; ctx.beginPath(); ctx.arc(150,40,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font='11px monospace';
+      ctx.fillText('← rect', 55,23); ctx.fillText('← arc',170,38);
+    }
+  },
+  {
+    title: 'The Grid',
+    emoji: '⊞',
+    body: `
+      <p>Snake lives on a <strong>grid</strong>. Instead of exact pixel positions, we track every piece in grid cells (like a chessboard).</p>
+      <p>A 400×400 canvas with a cell size of 20 gives us a <strong>20×20 grid</strong>.</p>
+<pre><code><span class="kw">const</span> CELL = <span class="num">20</span>;            <span class="cm">// pixels per cell</span>
+<span class="kw">const</span> COLS = <span class="num">400</span> / CELL;    <span class="cm">// 20 columns</span>
+<span class="kw">const</span> ROWS = <span class="num">400</span> / CELL;    <span class="cm">// 20 rows</span>
+
+<span class="cm">// Draw one cell at grid position (col, row)</span>
+<span class="kw">function</span> <span class="fn">drawCell</span>(col, row, color) {
+  ctx.fillStyle = color;
+  ctx.<span class="fn">fillRect</span>(col * CELL, row * CELL, CELL - <span class="num">1</span>, CELL - <span class="num">1</span>);
+}
+</code></pre>
+      <div class="concept-box"><strong>Grid coordinate → pixel:</strong> multiply by CELL size. Cell (3,2) starts at pixel (60, 40).</div>
+      <div class="tryit">
+        <div class="tryit-header">▶ Live preview — a 10×5 grid</div>
+        <canvas id="cv3" width="200" height="100"></canvas>
+      </div>
+    `,
+    tryit: (canvas) => {
+      const ctx = canvas.getContext('2d'), C=20;
+      ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,200,100);
+      for(let c=0;c<10;c++) for(let r=0;r<5;r++){
+        ctx.fillStyle=`hsl(${c*36},30%,18%)`; ctx.fillRect(c*C+1,r*C+1,C-2,C-2);
+      }
+      ctx.fillStyle='#7c3aed'; ctx.fillRect(3*C+1,2*C+1,C-2,C-2);
+    }
+  },
+  {
+    title: 'The Snake Data',
+    emoji: '🐍',
+    body: `
+      <p>The snake is stored as an <strong>array of grid coordinates</strong>. The first item <code>[0]</code> is the <em>head</em>; the last is the <em>tail</em>.</p>
+<pre><code><span class="kw">let</span> snake = [
+  { x: <span class="num">10</span>, y: <span class="num">10</span> },  <span class="cm">// head</span>
+  { x: <span class="num">9</span>,  y: <span class="num">10</span> },  <span class="cm">// body</span>
+  { x: <span class="num">8</span>,  y: <span class="num">10</span> },  <span class="cm">// tail</span>
+];
+
+<span class="kw">let</span> dir = { x: <span class="num">1</span>, y: <span class="num">0</span> }; <span class="cm">// moving right</span>
+</code></pre>
+      <p>To draw the snake, loop through the array and draw each cell:</p>
+<pre><code>snake.<span class="fn">forEach</span>(seg => {
+  ctx.fillStyle = <span class="str">'#7c3aed'</span>;
+  <span class="fn">drawCell</span>(seg.x, seg.y);
+});
+</code></pre>
+    `
+  },
+  {
+    title: 'Moving the Snake',
+    emoji: '➡️',
+    body: `
+      <p>Every tick of the game loop, the snake moves by:</p>
+      <ul>
+        <li><strong>Adding</strong> a new head segment in the direction of travel</li>
+        <li><strong>Removing</strong> the tail segment (so the length stays the same)</li>
+      </ul>
+<pre><code><span class="kw">function</span> <span class="fn">move</span>() {
+  <span class="cm">// New head position</span>
+  <span class="kw">const</span> head = {
+    x: snake[<span class="num">0</span>].x + dir.x,
+    y: snake[<span class="num">0</span>].y + dir.y,
+  };
+  snake.<span class="fn">unshift</span>(head); <span class="cm">// add to front</span>
+  snake.<span class="fn">pop</span>();        <span class="cm">// remove from back</span>
+}
+</code></pre>
+      <div class="concept-box"><strong>unshift</strong> adds to the front of an array. <strong>pop</strong> removes from the back. Together they slide the whole snake forward.</div>
+    `
+  },
+  {
+    title: 'Keyboard Input',
+    emoji: '⌨️',
+    body: `
+      <p>We listen for <code>keydown</code> events on <code>window</code> and update the direction — but we never let the snake reverse into itself.</p>
+<pre><code>window.<span class="fn">addEventListener</span>(<span class="str">'keydown'</span>, e => {
+  <span class="kw">const</span> map = {
+    ArrowUp:    { x: <span class="num">0</span>, y: -<span class="num">1</span> },
+    ArrowDown:  { x: <span class="num">0</span>, y:  <span class="num">1</span> },
+    ArrowLeft:  { x: -<span class="num">1</span>, y: <span class="num">0</span> },
+    ArrowRight: { x:  <span class="num">1</span>, y: <span class="num">0</span> },
+  };
+  <span class="kw">const</span> newDir = map[e.key];
+  <span class="kw">if</span> (!newDir) <span class="kw">return</span>;
+
+  <span class="cm">// Block reversing (don't go left if moving right)</span>
+  <span class="kw">if</span> (newDir.x === -dir.x &amp;&amp; newDir.y === -dir.y) <span class="kw">return</span>;
+
+  dir = newDir;
+});
+</code></pre>
+      <div class="concept-box"><strong>Why block reversing?</strong> If you go right and instantly press left, the new head lands on the second body segment — instant death. Block it to feel fair.</div>
+    `
+  },
+  {
+    title: 'Spawning Food',
+    emoji: '🍎',
+    body: `
+      <p>Food is a single grid coordinate. When the snake eats it, we <em>don't remove the tail</em> that tick — this makes the snake grow by 1.</p>
+<pre><code><span class="kw">let</span> food = <span class="fn">spawnFood</span>();
+
+<span class="kw">function</span> <span class="fn">spawnFood</span>() {
+  <span class="kw">let</span> pos;
+  <span class="kw">do</span> {
+    pos = {
+      x: Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * COLS),
+      y: Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * ROWS),
+    };
+  } <span class="kw">while</span> (snake.<span class="fn">some</span>(s => s.x === pos.x &amp;&amp; s.y === pos.y));
+  <span class="kw">return</span> pos;
+}
+
+<span class="cm">// In the move function, check if head hits food:</span>
+<span class="kw">if</span> (head.x === food.x &amp;&amp; head.y === food.y) {
+  score += <span class="num">10</span>;
+  food = <span class="fn">spawnFood</span>();
+  <span class="cm">// DON'T pop the tail → snake grows</span>
+} <span class="kw">else</span> {
+  snake.<span class="fn">pop</span>(); <span class="cm">// normal move</span>
+}
+</code></pre>
+    `
+  },
+  {
+    title: 'Collision Detection',
+    emoji: '💥',
+    body: `
+      <p>The game ends when the snake hits a <strong>wall</strong> or <strong>itself</strong>. Both checks happen right after computing the new head position.</p>
+<pre><code><span class="cm">// Wall collision</span>
+<span class="kw">if</span> (head.x &lt; <span class="num">0</span> || head.x >= COLS ||
+    head.y &lt; <span class="num">0</span> || head.y >= ROWS) {
+  <span class="fn">gameOver</span>();
+  <span class="kw">return</span>;
+}
+
+<span class="cm">// Self collision — does any segment match the head?</span>
+<span class="kw">if</span> (snake.<span class="fn">some</span>(s => s.x === head.x &amp;&amp; s.y === head.y)) {
+  <span class="fn">gameOver</span>();
+  <span class="kw">return</span>;
+}
+</code></pre>
+      <div class="concept-box"><strong>Array.some()</strong> returns true if <em>any</em> element matches the condition — perfect for checking if the head overlaps any body segment.</div>
+    `
+  },
+  {
+    title: 'Score & Game Over',
+    emoji: '🏆',
+    body: `
+      <p>You now have all the pieces! The final touches: display the score on the canvas, show a Game Over screen, and let the player restart.</p>
+<pre><code><span class="kw">function</span> <span class="fn">draw</span>() {
+  <span class="cm">// ... draw grid, snake, food ...</span>
+
+  <span class="cm">// Score overlay</span>
+  ctx.fillStyle = <span class="str">'white'</span>;
+  ctx.font      = <span class="str">'14px sans-serif'</span>;
+  ctx.textAlign = <span class="str">'left'</span>;
+  ctx.<span class="fn">fillText</span>(<span class="str">\`Score: \${score}\`</span>, <span class="num">8</span>, <span class="num">20</span>);
+}
+
+<span class="kw">function</span> <span class="fn">gameOver</span>() {
+  alive = <span class="kw">false</span>;
+  <span class="fn">clearInterval</span>(loop);
+
+  ctx.fillStyle = <span class="str">'rgba(0,0,0,0.7)'</span>;
+  ctx.<span class="fn">fillRect</span>(<span class="num">0</span>, <span class="num">0</span>, canvas.width, canvas.height);
+  ctx.fillStyle = <span class="str">'white'</span>;
+  ctx.font = <span class="str">'bold 28px sans-serif'</span>;
+  ctx.textAlign = <span class="str">'center'</span>;
+  ctx.<span class="fn">fillText</span>(<span class="str">'Game Over'</span>, canvas.width/<span class="num">2</span>, canvas.height/<span class="num">2</span>);
+}
+
+<span class="cm">// Restart on space bar</span>
+window.<span class="fn">addEventListener</span>(<span class="str">'keydown'</span>, e => {
+  <span class="kw">if</span> (e.key === <span class="str">' '</span> &amp;&amp; !alive) <span class="fn">startGame</span>();
+});
+</code></pre>
+      <div class="concept-box" style="border-color:var(--green);background:rgba(63,185,80,.07)">
+        <strong style="color:var(--green)">🎉 You did it!</strong> You now know how to build Snake — game loop, canvas drawing, keyboard input, collision detection, and scoring. The game on the <a href="games.html" style="color:var(--cyan)">Play page</a> is built exactly this way.
+      </div>
+      <div style="margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap">
+        <a href="games.html" class="btn btn-primary">▶ Play Snake Now</a>
+        <a href="maker.html" class="btn btn-cyan">🛠 Customize Your Version</a>
+      </div>
+    `
+  }
+];
+
+// ── Render ───────────────────────────────────────────────────────────────────
+let current = 0;
+const done  = new Set();
+
+const linksEl  = document.getElementById('stepLinks');
+const panelsEl = document.getElementById('stepPanels');
+
+STEPS.forEach((step, i) => {
+  // Sidebar link
+  const link = document.createElement('div');
+  link.className   = 'step-link' + (i === 0 ? ' active' : '');
+  link.dataset.idx = i;
+  link.innerHTML   = `<div class="step-num-sm">${i+1}</div>${step.title}`;
+  link.addEventListener('click', () => goTo(i));
+  linksEl.appendChild(link);
+
+  // Panel
+  const panel = document.createElement('div');
+  panel.className   = 'step-panel' + (i === 0 ? ' active' : '');
+  panel.dataset.idx = i;
+  panel.innerHTML   = `
+    <div class="step-banner">
+      <div class="step-badge">${i+1}</div>
+      <div>
+        <h2>${step.emoji} ${step.title}</h2>
+        <p>Step ${i+1} of ${STEPS.length}</p>
+      </div>
+    </div>
+    <div class="lesson-body">${step.body}</div>
+    <div class="step-nav">
+      ${i > 0 ? `<button class="btn btn-ghost" onclick="goTo(${i-1})">← Previous</button>` : '<span></span>'}
+      <div class="spacer"></div>
+      ${i < STEPS.length-1
+        ? `<button class="btn btn-primary" onclick="goTo(${i+1})">Next Step →</button>`
+        : ''}
+    </div>`;
+  panelsEl.appendChild(panel);
+});
+
+function goTo(idx) {
+  done.add(current);
+  current = idx;
+
+  document.querySelectorAll('.step-link').forEach((l, i) => {
+    l.classList.toggle('active', i === idx);
+    if (done.has(i) && i !== idx) l.classList.add('done');
+  });
+  document.querySelectorAll('.step-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+
+  // Run tryit canvas if present
+  const step = STEPS[idx];
+  if (step.tryit) {
+    const cvId  = `cv${idx+1}`;
+    const cv    = document.getElementById(cvId);
+    if (cv) step.tryit(cv);
+  }
+
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const pct = Math.round((done.size / STEPS.length) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progFrac').textContent = `${done.size} / ${STEPS.length}`;
+}
+
+// Run tryit for step 0
+if (STEPS[0].tryit) {
+  const cv = document.getElementById('cv1');
+  if (cv) STEPS[0].tryit(cv);
+}
+// Run step 2 tryit immediately (it's in the initial body)
+setTimeout(() => {
+  if (STEPS[1].tryit) { const c=document.getElementById('cv2'); if(c) STEPS[1].tryit(c); }
+  if (STEPS[2].tryit) { const c=document.getElementById('cv3'); if(c) STEPS[2].tryit(c); }
+}, 50);
+</script>
+</body>
+</html>

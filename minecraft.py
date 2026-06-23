@@ -280,11 +280,11 @@ def generate_clouds():
 _menu_panel = Entity(
     parent=camera.ui, model='quad',
     color=color.rgba(10, 12, 28, 245),
-    scale=(2, 2), z=-1,
+    scale=(2, 2), z=0.1,  # positive z = behind text/buttons in Ursina UI
 )
-Text('Python Minecraft', parent=camera.ui, position=(0, 0.26),
+_menu_title = Text('Python Minecraft', parent=camera.ui, position=(0, 0.26),
      origin=(0, 0), scale=2.8, color=color.rgb(255, 200, 40))
-Text('3D Voxel World', parent=camera.ui, position=(0, 0.13),
+_menu_sub   = Text('3D Voxel World', parent=camera.ui, position=(0, 0.13),
      origin=(0, 0), scale=1.3, color=color.rgb(160, 160, 160))
 
 _loading = Text('Generating world...', parent=camera.ui, position=(0, 0),
@@ -307,10 +307,8 @@ _btn_quit = Button(
 def _do_start():
     global _started, selected_label, hotbar_label
 
-    _menu_panel.enabled = False
-    for e in _menu_panel.children[:]:
+    for e in (_menu_panel, _menu_title, _menu_sub, _loading, _btn_start, _btn_quit):
         e.enabled = False
-    _loading.enabled = False
 
     # Build world
     surface_map, tree_spots, animal_spawns = generate_world()

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Games · GameHub</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .arcade-wrap {
+    height: calc(100vh - var(--nav-h));
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+
+  .game-slide {
+    height: calc(100vh - var(--nav-h));
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    padding: .75rem 1rem 1rem;
+    position: relative;
+  }
+
+  .game-slide:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .game-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .game-meta h2 { font-size: 1.35rem; }
+
+  .controls-row {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  .key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: .1rem .45rem;
+    font-size: .75rem;
+    font-family: monospace;
+    color: var(--text-dim);
+  }
+
+  .high-score { color: var(--yellow); font-size: .85rem; margin-left: auto; }
+
+  .scroll-next {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .25rem;
+    color: var(--text-dim);
+    font-size: .8rem;
+    cursor: pointer;
+    user-select: none;
+    padding: .3rem .8rem;
+    border-radius: 20px;
+    transition: background .2s;
+  }
+  .scroll-next:hover { background: var(--surface2); }
+  .scroll-next .arrow { font-size: 1.1rem; }
+
+  .dot-nav {
+    position: fixed;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    z-index: 100;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+  }
+  .dot.active { background: var(--purple-lg); transform: scale(1.4); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 GameHub</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="games.html" class="active">Play</a>
+    <a href="maker.html">Create</a>
+    <a href="learn.html">Learn</a>
+  </div>
+</nav>
+
+<!-- Side dot navigation -->
+<div class="dot-nav">
+  <div class="dot active" data-idx="0" title="Snake"></div>
+  <div class="dot"        data-idx="1" title="Pong"></div>
+  <div class="dot"        data-idx="2" title="Breakout"></div>
+</div>
+
+<main>
+  <div class="arcade-wrap" id="arcadeWrap">
+
+    <!-- ── Snake ── -->
+    <section class="game-slide" id="slide-0">
+      <div class="game-meta">
+        <span class="tag tag-green">Classic</span>
+        <h2>Snake</h2>
+        <div class="controls-row">
+          <span class="key">↑↓←→</span>
+          <span class="key">WASD</span>
+        </div>
+        <span class="high-score" id="hs-snake">Best: 0</span>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="snakeCanvas" width="400" height="400"></canvas>
+      </div>
+
+      <div class="scroll-hint scroll-next" id="next0">
+        <span>Scroll for Pong</span>
+        <span class="arrow">↓</span>
+      </div>
+    </section>
+
+    <!-- ── Pong ── -->
+    <section class="game-slide" id="slide-1">
+      <div class="game-meta">
+        <span class="tag tag-purple">VS CPU</span>
+        <h2>Pong</h2>
+        <div class="controls-row">
+          <span class="key">W / S</span>
+          <span class="key">↑ / ↓</span>
+          <span style="font-size:.8rem;color:var(--text-dim)">First to 5 wins</span>
+        </div>
+        <span class="high-score" id="hs-pong">Best: 0</span>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="pongCanvas" width="620" height="380"></canvas>
+      </div>
+
+      <div class="scroll-hint scroll-next" id="next1">
+        <span>Scroll for Breakout</span>
+        <span class="arrow">↓</span>
+      </div>
+    </section>
+
+    <!-- ── Breakout ── -->
+    <section class="game-slide" id="slide-2">
+      <div class="game-meta">
+        <span class="tag tag-cyan">Mouse</span>
+        <h2>Breakout</h2>
+        <div class="controls-row">
+          <span class="key">Mouse</span>
+          <span class="key">Space</span>
+          <span style="font-size:.8rem;color:var(--text-dim)">Clear all bricks!</span>
+        </div>
+        <span class="high-score" id="hs-break">Best: 0</span>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="breakCanvas" width="560" height="420"></canvas>
+      </div>
+
+      <div class="scroll-hint scroll-next" id="next2">
+        <span>Back to Snake</span>
+        <span class="arrow">↑</span>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script type="module">
+import { SnakeGame   } from './js/snake.js';
+import { PongGame    } from './js/pong.js';
+import { BreakoutGame} from './js/breakout.js';
+
+// ── Instantiate games ────────────────────────────────────────────────────────
+const snake    = new SnakeGame(document.getElementById('snakeCanvas'));
+const pong     = new PongGame(document.getElementById('pongCanvas'));
+const breakout = new BreakoutGame(document.getElementById('breakCanvas'));
+
+// ── High scores ──────────────────────────────────────────────────────────────
+const hs = { snake: +localStorage.getItem('hs_snake')||0,
+             pong:  +localStorage.getItem('hs_pong') ||0,
+             break: +localStorage.getItem('hs_break')||0 };
+
+function updateHS(key, score, el) {
+  if (score > hs[key]) {
+    hs[key] = score;
+    localStorage.setItem(`hs_${key}`, score);
+  }
+  document.getElementById(el).textContent = `Best: ${hs[key]}`;
+}
+updateHS('snake','','hs-snake');
+updateHS('pong', '','hs-pong');
+updateHS('break','','hs-break');
+
+snake.onGameOver    = s => updateHS('snake', s, 'hs-snake');
+pong.onGameOver     = s => updateHS('pong',  s, 'hs-pong');
+breakout.onGameOver = s => updateHS('break', s, 'hs-break');
+
+// ── Scroll snap / active dot tracking ───────────────────────────────────────
+const wrap   = document.getElementById('arcadeWrap');
+const slides = [...document.querySelectorAll('.game-slide')];
+const dots   = [...document.querySelectorAll('.dot')];
+let current  = 0;
+
+function setSlide(idx) {
+  current = Math.max(0, Math.min(slides.length - 1, idx));
+  dots.forEach((d,i) => d.classList.toggle('active', i === current));
+}
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = slides.indexOf(e.target);
+      if (idx !== -1) setSlide(idx);
+    }
+  });
+}, { root: wrap, threshold: .6 });
+
+slides.forEach(s => io.observe(s));
+
+dots.forEach(d => d.addEventListener('click', () => {
+  slides[+d.dataset.idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+
+// Scroll-next buttons
+document.getElementById('next0').onclick = () => slides[1].scrollIntoView({ behavior:'smooth' });
+document.getElementById('next1').onclick = () => slides[2].scrollIntoView({ behavior:'smooth' });
+document.getElementById('next2').onclick = () => slides[0].scrollIntoView({ behavior:'smooth' });
+
+// ── Keyboard routing ─────────────────────────────────────────────────────────
+const games = [snake, pong, breakout];
+window.addEventListener('keydown', e => {
+  const g = games[current];
+  if (g === pong) {
+    pong.handleKey(e.key, true);
+  } else {
+    g.handleKey(e.key);
+  }
+  // Prevent page scroll on arrow/space
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+});
+window.addEventListener('keyup', e => {
+  if (current === 1) pong.handleKey(e.key, false);
+});
+
+// ── Click to restart ─────────────────────────────────────────────────────────
+document.getElementById('snakeCanvas').addEventListener('click',  () => snake.clickOrSpace());
+document.getElementById('pongCanvas').addEventListener('click',   () => pong.clickOrSpace());
+document.getElementById('breakCanvas').addEventListener('click',  () => breakout.clickOrSpace());
+
+// ── Breakout mouse tracking ───────────────────────────────────────────────────
+document.getElementById('breakCanvas').addEventListener('mousemove', e => breakout.handleMouse(e.clientX));
+</script>
+</body>
+</html>

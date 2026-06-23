@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameHub · Build. Play. Learn.</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ── Hero ── */
+  .hero {
+    min-height: calc(100vh - var(--nav-h));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 30%, rgba(124,58,237,.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 70%, rgba(0,212,255,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    background: rgba(124,58,237,.15);
+    border: 1px solid rgba(124,58,237,.35);
+    color: var(--purple-lg);
+    padding: .3rem .9rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+  }
+
+  .hero h1 span { color: var(--purple-lg); }
+  .hero h1 .c   { color: var(--cyan); }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 520px;
+    margin: 1rem auto 2rem;
+  }
+
+  .hero-btns { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--purple-lg); }
+  .stat-lbl { font-size: .8rem; color: var(--text-dim); }
+
+  /* ── Sections ── */
+  .section { padding: 5rem 0; }
+  .section-head { text-align: center; margin-bottom: 3rem; }
+  .section-head h2 { margin-bottom: .4rem; }
+
+  /* ── Feature cards ── */
+  .feat-icon {
+    font-size: 2.2rem;
+    margin-bottom: .9rem;
+    display: block;
+  }
+  .feat-card h3 { margin-bottom: .4rem; }
+  .feat-card p  { font-size: .9rem; margin-bottom: 1.1rem; }
+
+  /* ── Game previews ── */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1.25rem;
+  }
+  @media(max-width:700px) { .preview-grid { grid-template-columns: 1fr; } }
+
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+  .preview-card:hover { border-color: var(--purple); transform: translateY(-3px); }
+
+  .preview-thumb {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .preview-thumb::after {
+    content: 'PLAY';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .preview-card:hover .preview-thumb::after { opacity: 1; }
+
+  .preview-info { padding: 1rem; }
+  .preview-info h3 { margin-bottom: .2rem; }
+  .preview-info p  { font-size: .83rem; }
+
+  .thumb-snake    { background: linear-gradient(135deg, #0d1117 0%, #1a0533 100%); }
+  .thumb-pong     { background: linear-gradient(135deg, #0d1117 0%, #001133 100%); }
+  .thumb-breakout { background: linear-gradient(135deg, #0d1117 0%, #0d2200 100%); }
+
+  /* ── Steps ── */
+  .steps { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .step {
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .step-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(124,58,237,.2);
+    border: 2px solid var(--purple);
+    color: var(--purple-lg);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto .9rem;
+  }
+  .step h3 { margin-bottom: .3rem; }
+
+  /* ── CTA banner ── */
+  .cta-banner {
+    background: linear-gradient(135deg, rgba(124,58,237,.2) 0%, rgba(0,212,255,.1) 100%);
+    border: 1px solid rgba(124,58,237,.3);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .cta-banner h2 { margin-bottom: .5rem; }
+  .cta-banner p  { margin-bottom: 1.5rem; }
+  .cta-banner .btns { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: .85rem;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 GameHub</a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="games.html">Play</a>
+    <a href="maker.html">Create</a>
+    <a href="learn.html">Learn</a>
+  </div>
+</nav>
+
+<main style="padding-top: var(--nav-h)">
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-badge">✨ Build · Play · Learn</div>
+    <h1 class="glow">Make games.<br><span>Play</span> games. <span class="c">Learn</span> how.</h1>
+    <p class="hero-sub">
+      A game platform where anyone can create mini games, play them in the browser,
+      and follow step-by-step tutorials to build their own.
+    </p>
+    <div class="hero-btns">
+      <a href="games.html"  class="btn btn-primary">▶ Play Now</a>
+      <a href="maker.html"  class="btn btn-cyan">🛠 Create a Game</a>
+      <a href="learn.html"  class="btn btn-ghost">📖 Learn</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Mini Games</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-lbl">Customizations</div></div>
+      <div class="stat"><div class="stat-num">9</div><div class="stat-lbl">Tutorial Steps</div></div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Everything you need</h2>
+        <p>Three ways to enjoy games — all in one place</p>
+      </div>
+      <div class="grid-3">
+        <div class="card feat-card">
+          <span class="feat-icon">🕹️</span>
+          <h3>Play Mini Games</h3>
+          <p>Scroll through Snake, Pong, and Breakout. High scores saved in your browser. Compete with yourself!</p>
+          <a href="games.html" class="btn btn-primary btn-sm">Play Now →</a>
+        </div>
+        <div class="card feat-card">
+          <span class="feat-icon">🛠️</span>
+          <h3>Create Your Own</h3>
+          <p>Pick a game template, customize colors, speed, and difficulty, then download your game as a file you can share anywhere.</p>
+          <a href="maker.html" class="btn btn-cyan btn-sm">Open Maker →</a>
+        </div>
+        <div class="card feat-card">
+          <span class="feat-icon">📖</span>
+          <h3>Learn Game Dev</h3>
+          <p>Follow a step-by-step tutorial that teaches you how to build Snake from scratch using JavaScript and the HTML canvas.</p>
+          <a href="learn.html" class="btn btn-ghost btn-sm">Start Tutorial →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Game previews ── -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <h2>Mini Games</h2>
+        <p>Scroll between games with one swipe</p>
+      </div>
+      <div class="preview-grid">
+        <a href="games.html#slide-0" class="preview-card">
+          <div class="preview-thumb thumb-snake">🐍</div>
+          <div class="preview-info">
+            <h3>Snake</h3>
+            <p>Classic grid snake — eat, grow, avoid yourself. Arrow keys or WASD.</p>
+          </div>
+        </a>
+        <a href="games.html#slide-1" class="preview-card">
+          <div class="preview-thumb thumb-pong">🏓</div>
+          <div class="preview-info">
+            <h3>Pong</h3>
+            <p>Rally vs the CPU. First to 5 points wins. W/S or arrow keys.</p>
+          </div>
+        </a>
+        <a href="games.html#slide-2" class="preview-card">
+          <div class="preview-thumb thumb-breakout">🧱</div>
+          <div class="preview-info">
+            <h3>Breakout</h3>
+            <p>Smash all the bricks with your mouse-controlled paddle.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section class="section" style="background: var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
+    <div class="container">
+      <div class="section-head">
+        <h2>How it works</h2>
+        <p>From idea to playable game in minutes</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Pick a template</h3>
+          <p>Choose Snake, Pong, or Breakout as your starting point in the Game Maker.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Customize it</h3>
+          <p>Adjust colors, speed, difficulty — see changes live in the preview canvas.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Download & share</h3>
+          <p>Export your game as a single HTML file. Open it in any browser or share the file.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-banner">
+        <h2>Ready to build your first game?</h2>
+        <p>No experience needed. Pick a template and start customizing in seconds.</p>
+        <div class="btns">
+          <a href="maker.html" class="btn btn-primary">🛠 Open Game Maker</a>
+          <a href="learn.html" class="btn btn-ghost">📖 Read the Tutorial</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    GameHub · Built with HTML, CSS &amp; JavaScript · <a href="learn.html" style="color:var(--purple-lg);text-decoration:none">Learn how →</a>
+  </div>
+</footer>
+
+</body>
+</html>

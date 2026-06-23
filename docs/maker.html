@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Maker · GameHub</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .maker-wrap {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - var(--nav-h));
+    padding-top: var(--nav-h);
+  }
+  @media(max-width:800px) {
+    .maker-wrap { grid-template-columns: 1fr; }
+    .panel-right { border-top: 1px solid var(--border); }
+  }
+
+  /* ── Left panel ── */
+  .panel-left {
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1.25rem;
+    overflow-y: auto;
+  }
+
+  .template-tabs {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: .45rem .5rem;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .tab-btn:hover  { background: var(--surface); color: var(--text); }
+  .tab-btn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+  .settings-section { display: none; }
+  .settings-section.active { display: block; }
+
+  .settings-title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--text-dim);
+    margin-bottom: .8rem;
+    margin-top: 1rem;
+  }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .color-label { flex: 1; font-size: .88rem; color: var(--text-dim); }
+
+  .divider { height:1px; background: var(--border); margin: 1rem 0; }
+
+  /* ── Right panel ── */
+  .panel-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 2rem;
+    background: radial-gradient(ellipse 50% 60% at 50% 40%, rgba(124,58,237,.08) 0%, transparent 70%);
+  }
+
+  .preview-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: .4px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .download-hint {
+    font-size: .8rem;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 360px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 GameHub</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="games.html">Play</a>
+    <a href="maker.html" class="active">Create</a>
+    <a href="learn.html">Learn</a>
+  </div>
+</nav>
+
+<div class="maker-wrap">
+
+  <!-- ── Settings Panel ── -->
+  <aside class="panel-left">
+    <h2 style="margin-bottom:.3rem">Game Maker</h2>
+    <p style="font-size:.85rem;margin-bottom:1rem">Customize your game, then download it.</p>
+
+    <div class="template-tabs">
+      <button class="tab-btn active" data-tpl="snake">🐍 Snake</button>
+      <button class="tab-btn"        data-tpl="pong">🏓 Pong</button>
+      <button class="tab-btn"        data-tpl="break">🧱 Breakout</button>
+    </div>
+
+    <!-- Snake Settings -->
+    <div class="settings-section active" id="s-snake">
+      <div class="settings-title">Colors</div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Snake color</span>
+          <input type="color" id="snakeSnakeColor" value="#7c3aed">
+        </div>
+      </div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Food color</span>
+          <input type="color" id="snakeFoodColor" value="#f85149">
+        </div>
+      </div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Background</span>
+          <input type="color" id="snakeBgColor" value="#0d1117">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="settings-title">Speed</div>
+      <div class="field">
+        <label>Starting speed — <span id="snakeSpeedLbl">Medium</span></label>
+        <input type="range" id="snakeSpeed" min="1" max="3" step="1" value="2">
+      </div>
+
+      <div class="divider"></div>
+      <div class="settings-title">Grid size</div>
+      <div class="field">
+        <label>Cell size — <span id="snakeCellLbl">20px (20×20)</span></label>
+        <input type="range" id="snakeCell" min="16" max="32" step="4" value="20">
+      </div>
+    </div>
+
+    <!-- Pong Settings -->
+    <div class="settings-section" id="s-pong">
+      <div class="settings-title">Colors</div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Your paddle</span>
+          <input type="color" id="pongP1Color" value="#7c3aed">
+        </div>
+      </div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">CPU paddle</span>
+          <input type="color" id="pongP2Color" value="#f85149">
+        </div>
+      </div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Ball color</span>
+          <input type="color" id="pongBallColor" value="#00d4ff">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="settings-title">Gameplay</div>
+      <div class="field">
+        <label>Ball speed — <span id="pongSpeedLbl">Normal</span></label>
+        <input type="range" id="pongSpeed" min="1" max="3" step="1" value="2">
+      </div>
+      <div class="field">
+        <label>AI difficulty — <span id="pongAiLbl">Medium</span></label>
+        <input type="range" id="pongAi" min="1" max="3" step="1" value="2">
+      </div>
+    </div>
+
+    <!-- Breakout Settings -->
+    <div class="settings-section" id="s-break">
+      <div class="settings-title">Colors</div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Paddle color</span>
+          <input type="color" id="breakPaddleColor" value="#7c3aed">
+        </div>
+      </div>
+      <div class="field">
+        <div class="color-row">
+          <span class="color-label">Ball color</span>
+          <input type="color" id="breakBallColor" value="#00d4ff">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="settings-title">Brick color scheme</div>
+      <div class="field">
+        <label>Theme</label>
+        <select id="breakScheme">
+          <option value="neon">Neon</option>
+          <option value="fire">Fire</option>
+          <option value="ocean">Ocean</option>
+          <option value="candy">Candy</option>
+          <option value="mono">Mono</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+      <div class="settings-title">Gameplay</div>
+      <div class="field">
+        <label>Brick rows — <span id="breakRowsLbl">5</span></label>
+        <input type="range" id="breakRows" min="3" max="7" step="1" value="5">
+      </div>
+      <div class="field">
+        <label>Ball speed — <span id="breakSpeedLbl">Normal</span></label>
+        <input type="range" id="breakSpeed" min="1" max="3" step="1" value="2">
+      </div>
+      <div class="field">
+        <label>Paddle size — <span id="breakPaddleLbl">Normal</span></label>
+        <input type="range" id="breakPaddle" min="1" max="3" step="1" value="2">
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Preview Panel ── -->
+  <div class="panel-right">
+    <div class="preview-title">🎮 Live Preview</div>
+    <div class="canvas-box">
+      <canvas id="makerCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-green" id="resetBtn">↺ Reset Game</button>
+      <button class="btn btn-primary" id="downloadBtn">⬇ Download Game</button>
+    </div>
+    <p class="download-hint">Download saves your game as a standalone HTML file you can open in any browser or share with friends.</p>
+  </div>
+
+</div>
+
+<script type="module">
+import { SnakeGame    } from './js/snake.js';
+import { PongGame     } from './js/pong.js';
+import { BreakoutGame } from './js/breakout.js';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentTpl = 'snake';
+let game       = null;
+const canvas   = document.getElementById('makerCanvas');
+
+const SCHEMES = {
+  neon:  ['#f85149','#f0a83b','#f0e68c','#3fb950','#00d4ff','#a78bfa'],
+  fire:  ['#ff2d00','#ff6a00','#ff9f00','#ffd000','#fff200'],
+  ocean: ['#005f73','#0a9396','#94d2bd','#e9d8a6','#ee9b00'],
+  candy: ['#ff6b9d','#ff8fab','#ffc8dd','#cdb4db','#a2d2ff'],
+  mono:  ['#888','#aaa','#ccc','#ddd','#eee'],
+};
+
+const speedMap    = { 1: ['Slow',200], 2: ['Normal',130], 3: ['Fast',70] };
+const aiMap       = { 1: ['Easy',.45], 2: ['Medium',.70], 3: ['Hard',.95] };
+const paddleMap   = { 1: ['Small',.65], 2: ['Normal',1], 3: ['Wide',1.5] };
+const ballSpdMap  = { 1: ['Slow',.65], 2: ['Normal',1], 3: ['Fast',1.5] };
+
+// ── Build game from current settings ─────────────────────────────────────────
+function buildGame() {
+  if (game) game.destroy();
+
+  if (currentTpl === 'snake') {
+    canvas.width = 400; canvas.height = 400;
+    const cell = +document.getElementById('snakeCell').value;
+    game = new SnakeGame(canvas, {
+      cellSize:   cell,
+      snakeColor: document.getElementById('snakeSnakeColor').value,
+      foodColor:  document.getElementById('snakeFoodColor').value,
+      bgColor:    document.getElementById('snakeBgColor').value,
+      speed:      speedMap[document.getElementById('snakeSpeed').value][1],
+    });
+  } else if (currentTpl === 'pong') {
+    canvas.width = 560; canvas.height = 360;
+    game = new PongGame(canvas, {
+      p1Color:       document.getElementById('pongP1Color').value,
+      p2Color:       document.getElementById('pongP2Color').value,
+      ballColor:     document.getElementById('pongBallColor').value,
+      ballSpeed:     ballSpdMap[document.getElementById('pongSpeed').value][1],
+      aiDifficulty:  aiMap[document.getElementById('pongAi').value][1],
+    });
+  } else {
+    canvas.width = 480; canvas.height = 400;
+    const scheme = SCHEMES[document.getElementById('breakScheme').value];
+    game = new BreakoutGame(canvas, {
+      paddleColor:  document.getElementById('breakPaddleColor').value,
+      ballColor:    document.getElementById('breakBallColor').value,
+      ballSpeed:    ballSpdMap[document.getElementById('breakSpeed').value][1],
+      brickRows:    +document.getElementById('breakRows').value,
+      paddleScale:  paddleMap[document.getElementById('breakPaddle').value][1],
+      scheme,
+    });
+  }
+}
+
+// ── Template tabs ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    currentTpl = btn.dataset.tpl;
+    document.getElementById(`s-${currentTpl}`).classList.add('active');
+    buildGame();
+  });
+});
+
+// ── Live setting updates ──────────────────────────────────────────────────────
+function watchAll() {
+  document.querySelectorAll('input[type=color], input[type=range], select').forEach(el => {
+    el.addEventListener('input', () => {
+      updateLabels();
+      buildGame();
+    });
+  });
+}
+
+function updateLabels() {
+  document.getElementById('snakeSpeedLbl').textContent = speedMap[document.getElementById('snakeSpeed').value][0];
+  const cell = +document.getElementById('snakeCell').value;
+  const grid = Math.floor(400/cell);
+  document.getElementById('snakeCellLbl').textContent = `${cell}px (${grid}×${grid})`;
+  document.getElementById('pongSpeedLbl').textContent  = ballSpdMap[document.getElementById('pongSpeed').value][0];
+  document.getElementById('pongAiLbl').textContent     = aiMap[document.getElementById('pongAi').value][0];
+  document.getElementById('breakRowsLbl').textContent  = document.getElementById('breakRows').value;
+  document.getElementById('breakSpeedLbl').textContent = ballSpdMap[document.getElementById('breakSpeed').value][0];
+  document.getElementById('breakPaddleLbl').textContent= paddleMap[document.getElementById('breakPaddle').value][0];
+}
+
+watchAll();
+updateLabels();
+
+// ── Keyboard routing ──────────────────────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  if (!game) return;
+  if (currentTpl === 'pong') game.handleKey(e.key, true);
+  else game.handleKey(e.key);
+  if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+});
+window.addEventListener('keyup', e => {
+  if (currentTpl === 'pong' && game) game.handleKey(e.key, false);
+});
+canvas.addEventListener('click',     () => game && game.clickOrSpace());
+canvas.addEventListener('mousemove', e  => currentTpl === 'break' && game && game.handleMouse(e.clientX));
+
+document.getElementById('resetBtn').addEventListener('click', () => buildGame());
+
+// ── Download ──────────────────────────────────────────────────────────────────
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const html = generateHTML();
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `my-${currentTpl}-game.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+function generateHTML() {
+  if (currentTpl === 'snake') {
+    const sc    = document.getElementById('snakeSnakeColor').value;
+    const fc    = document.getElementById('snakeFoodColor').value;
+    const bg    = document.getElementById('snakeBgColor').value;
+    const spd   = speedMap[document.getElementById('snakeSpeed').value][1];
+    const cell  = +document.getElementById('snakeCell').value;
+    const grid  = Math.floor(400/cell);
+    return snakeHTML({ sc, fc, bg, spd, cell, grid });
+  }
+  if (currentTpl === 'pong') {
+    const p1    = document.getElementById('pongP1Color').value;
+    const p2    = document.getElementById('pongP2Color').value;
+    const ball  = document.getElementById('pongBallColor').value;
+    const bspd  = ballSpdMap[document.getElementById('pongSpeed').value][1];
+    const aiSpd = aiMap[document.getElementById('pongAi').value][1];
+    return pongHTML({ p1, p2, ball, bspd, aiSpd });
+  }
+  // Breakout
+  const pc     = document.getElementById('breakPaddleColor').value;
+  const bc     = document.getElementById('breakBallColor').value;
+  const bspd   = ballSpdMap[document.getElementById('breakSpeed').value][1];
+  const rows   = +document.getElementById('breakRows').value;
+  const pscale = paddleMap[document.getElementById('breakPaddle').value][1];
+  const scheme = JSON.stringify(SCHEMES[document.getElementById('breakScheme').value]);
+  return breakoutHTML({ pc, bc, bspd, rows, pscale, scheme });
+}
+
+// ── HTML templates for download ───────────────────────────────────────────────
+function snakeHTML({ sc, fc, bg, spd, cell, grid }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Snake Game</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}h1{color:#e6edf3;font-family:sans-serif;font-size:1.2rem}canvas{border-radius:8px;border:2px solid #30363d}</style>
+</head><body><h1>🐍 Snake</h1><canvas id="g" width="400" height="400"></canvas>
+<script>
+const canvas=document.getElementById('g'),ctx=canvas.getContext('2d');
+const CELL=${cell},COLS=${grid},ROWS=${grid};
+let snake,dir,nextDir,food,score,alive,loop;
+function start(){
+  snake=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2)}];
+  dir={x:1,y:0};nextDir={x:1,y:0};food=spawn();score=0;alive=true;
+  clearInterval(loop);loop=setInterval(tick,${spd});
+}
+function spawn(){let p;do{p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)}}while(snake.some(s=>s.x===p.x&&s.y===p.y));return p;}
+function tick(){
+  dir=nextDir;
+  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS||snake.some(s=>s.x===h.x&&s.y===h.y)){
+    alive=false;clearInterval(loop);draw();return;
+  }
+  snake.unshift(h);
+  if(h.x===food.x&&h.y===food.y){score+=10;food=spawn();}else snake.pop();
+  draw();
+}
+function draw(){
+  ctx.fillStyle='${bg}';ctx.fillRect(0,0,400,400);
+  snake.forEach((s,i)=>{ctx.fillStyle=i===0?'${sc}':'${sc}99';ctx.beginPath();ctx.roundRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2,4);ctx.fill();});
+  ctx.fillStyle='${fc}';ctx.beginPath();ctx.arc(food.x*CELL+CELL/2,food.y*CELL+CELL/2,CELL/2-2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='bold 13px sans-serif';ctx.textAlign='left';ctx.fillText('Score: '+score,8,18);
+  if(!alive){ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,400,400);ctx.fillStyle='#fff';ctx.font='bold 28px sans-serif';ctx.textAlign='center';ctx.fillText('Game Over',200,185);ctx.font='16px sans-serif';ctx.fillStyle='#aaa';ctx.fillText('Score: '+score,200,215);ctx.fillText('Space to restart',200,245);}
+}
+window.addEventListener('keydown',e=>{
+  const m={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+  const d=m[e.key];if(d&&!(d.x===-dir.x&&d.y===-dir.y))nextDir=d;
+  if(e.key===' '&&!alive)start();
+  if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();
+});
+start();
+<\/script></body></html>`;
+}
+
+function pongHTML({ p1, p2, ball, bspd, aiSpd }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Pong Game</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}h1{color:#e6edf3;font-family:sans-serif;font-size:1.2rem}canvas{border-radius:8px;border:2px solid #30363d}</style>
+</head><body><h1>🏓 Pong</h1><canvas id="g" width="560" height="360"></canvas>
+<script>
+const canvas=document.getElementById('g'),ctx=canvas.getContext('2d');
+const W=560,H=360,PH=80,PW=12,BR=9,SPD=${bspd},AI=${aiSpd};
+let px,py,pvy,ax,ay,bx,by,bvx,bvy,ps,as,alive;
+function start(){px=18;py=H/2-PH/2;pvy=0;ax=W-18-PW;ay=H/2-PH/2;ps=0;as=0;alive=true;resetBall();}
+function resetBall(){const a=(Math.random()*60-30)*Math.PI/180,d=Math.random()<.5?1:-1,s=4.5*SPD;bx=W/2;by=H/2;bvx=s*d*Math.cos(a);bvy=s*Math.sin(a);}
+function update(dt){
+  const PS=300;
+  py+=pvy*PS*dt;py=Math.max(0,Math.min(H-PH,py));
+  const at=by-PH/2,ad=at-ay,as2=AI*PS*dt;ay+=Math.sign(ad)*Math.min(Math.abs(ad),as2);ay=Math.max(0,Math.min(H-PH,ay));
+  bx+=bvx*60*dt;by+=bvy*60*dt;
+  if(by-BR<0){by=BR;bvy*=-1;}if(by+BR>H){by=H-BR;bvy*=-1;}
+  if(bvx<0&&bx-BR<=px+PW&&bx-BR>=px-4&&by>=py-4&&by<=py+PH+4){bx=px+PW+BR;const r=(by-(py+PH/2))/(PH/2);bvx=Math.abs(bvx)*1.06;bvy=r*7;}
+  if(bvx>0&&bx+BR>=ax&&bx+BR<=ax+PW+4&&by>=ay-4&&by<=ay+PH+4){bx=ax-BR;const r=(by-(ay+PH/2))/(PH/2);bvx=-Math.abs(bvx)*1.06;bvy=r*7;}
+  if(bx<0){as++;if(as>=5){alive=false;draw();return;}setTimeout(resetBall,600);}
+  if(bx>W){ps++;if(ps>=5){alive=false;draw();return;}setTimeout(resetBall,600);}
+}
+function draw(){
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  ctx.setLineDash([10,10]);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
+  ctx.font='bold 34px sans-serif';ctx.textAlign='center';ctx.fillStyle='${p1}';ctx.fillText(ps,W/2-55,50);ctx.fillStyle='${p2}';ctx.fillText(as,W/2+55,50);
+  ctx.fillStyle='${p1}';ctx.beginPath();ctx.roundRect(px,py,PW,PH,4);ctx.fill();
+  ctx.fillStyle='${p2}';ctx.beginPath();ctx.roundRect(ax,ay,PW,PH,4);ctx.fill();
+  ctx.shadowColor='${ball}';ctx.shadowBlur=16;ctx.fillStyle='${ball}';ctx.beginPath();ctx.arc(bx,by,BR,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='11px sans-serif';ctx.textAlign='left';ctx.fillText('W/S to move',10,H-8);
+  if(!alive){ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle=ps>=5?'#3fb950':'#f85149';ctx.font='bold 30px sans-serif';ctx.fillText(ps>=5?'You Win!':'CPU Wins',W/2,H/2-15);ctx.fillStyle='#aaa';ctx.font='15px sans-serif';ctx.fillText('Space to play again',W/2,H/2+18);}
+}
+let last=null;
+function loop(ts){if(last&&alive)update((ts-last)/1000);last=ts;draw();if(alive)requestAnimationFrame(loop);}
+window.addEventListener('keydown',e=>{if((e.key==='ArrowUp'||e.key==='w'))pvy=-1;if((e.key==='ArrowDown'||e.key==='s'))pvy=1;if(e.key===' '&&!alive)start();e.preventDefault&&[' ',' '].includes(e.key)&&e.preventDefault();});
+window.addEventListener('keyup',e=>{if((e.key==='ArrowUp'||e.key==='w')&&pvy<0)pvy=0;if((e.key==='ArrowDown'||e.key==='s')&&pvy>0)pvy=0;});
+start();requestAnimationFrame(loop);
+<\/script></body></html>`;
+}
+
+function breakoutHTML({ pc, bc, bspd, rows, pscale, scheme }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Breakout Game</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}h1{color:#e6edf3;font-family:sans-serif;font-size:1.2rem}canvas{border-radius:8px;border:2px solid #30363d}</style>
+</head><body><h1>🧱 Breakout</h1><canvas id="g" width="480" height="400"></canvas>
+<script>
+const canvas=document.getElementById('g'),ctx=canvas.getContext('2d');
+const W=480,H=400,SCHEME=${scheme},ROWS=${rows},SPD=${bspd},PS=${pscale};
+let pw,ph_,px,bx,by,bvx,bvy,lives,score,bricks,alive,started,mx;
+function start(){pw=Math.round(W*0.18*PS);ph_=13;px=W/2-pw/2;lives=3;score=0;alive=true;started=false;mx=W/2;ball0();bricks=buildBricks();}
+function ball0(){const a=(Math.random()*40-20)*Math.PI/180,s=4.8*SPD;bx=W/2;by=H-70;bvx=s*Math.sin(a);bvy=-s*Math.cos(a);}
+function buildBricks(){const cols=10,bw=(W-40)/cols,bh=20,r=[];for(let row=0;row<ROWS;row++)for(let c=0;c<cols;c++)r.push({x:20+c*bw,y:55+row*(bh+5),w:bw-4,h:bh,alive:true,color:SCHEME[row%SCHEME.length],pts:(ROWS-row)*10});return r;}
+function update(dt){
+  const S=280*SPD;px=Math.max(0,Math.min(W-pw,mx-pw/2));
+  bx+=bvx*S*dt;by+=bvy*S*dt;
+  if(bx-8<0){bx=8;bvx*=-1;}if(bx+8>W){bx=W-8;bvx*=-1;}
+  if(by-8<0){by=8;bvy=Math.abs(bvy);}
+  const py2=H-40;
+  if(bvy>0&&by+8>=py2&&by+8<=py2+ph_+6&&bx>=px-4&&bx<=px+pw+4){const r=(bx-(px+pw/2))/(pw/2);bvy=-Math.abs(bvy);bvx=r*5.5;by=py2-8;}
+  if(by-8>H){lives--;if(lives<=0){alive=false;draw();return;}ball0();started=false;return;}
+  for(const b of bricks){if(!b.alive)continue;if(bx+8>=b.x&&bx-8<=b.x+b.w&&by+8>=b.y&&by-8<=b.y+b.h){b.alive=false;score+=b.pts;const ox=Math.min(Math.abs(bx-b.x),Math.abs(bx-(b.x+b.w))),oy=Math.min(Math.abs(by-b.y),Math.abs(by-(b.y+b.h)));if(oy<ox)bvy*=-1;else bvx*=-1;break;}}
+  if(bricks.every(b=>!b.alive)){bricks=buildBricks();ball0();started=false;}
+}
+function draw(){
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  bricks.forEach(b=>{if(!b.alive)return;ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,4);ctx.fill();});
+  ctx.shadowColor='${pc}';ctx.shadowBlur=12;ctx.fillStyle='${pc}';ctx.beginPath();ctx.roundRect(px,H-40,pw,ph_,5);ctx.fill();ctx.shadowBlur=0;
+  ctx.shadowColor='${bc}';ctx.shadowBlur=14;ctx.fillStyle='${bc}';ctx.beginPath();ctx.arc(bx,by,8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='bold 13px sans-serif';ctx.textAlign='left';ctx.fillText('Score: '+score,10,26);ctx.textAlign='right';ctx.fillStyle='#f85149';ctx.fillText('\\u2665'.repeat(lives),W-10,26);
+  if(!started&&alive){ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.fillText('Move mouse to start!',W/2,H/2);}
+  if(!alive){ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#f85149';ctx.font='bold 28px sans-serif';ctx.textAlign='center';ctx.fillText('Game Over',W/2,H/2-18);ctx.fillStyle='#aaa';ctx.font='15px sans-serif';ctx.fillText('Score: '+score,W/2,H/2+12);ctx.fillText('Click to play again',W/2,H/2+38);}
+}
+let last=null;
+function loop(ts){if(last&&started&&alive)update((ts-last)/1000);last=ts;draw();requestAnimationFrame(loop);}
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mx=(e.clientX-r.left)*(W/r.width);if(!started&&alive)started=true;});
+canvas.addEventListener('click',()=>{if(!alive)start();else started=true;});
+window.addEventListener('keydown',e=>{if(e.key===' '){if(!alive)start();else started=true;}});
+start();requestAnimationFrame(loop);
+<\/script></body></html>`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+buildGame();
+</script>
+</body>
+</html>
